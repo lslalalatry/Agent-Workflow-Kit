@@ -121,7 +121,7 @@
       <div class="row-between">
         <div>
           <div class="badges">
-            <span class="badge primary">Antigravity + Codex 双端已安装</span>
+            <span class="badge primary">适用于 Antigravity 和 Codex</span>
             <span class="badge">双击离线即用</span>
             <span class="badge">100% 跨行业通用</span>
           </div>
@@ -129,7 +129,7 @@
           <p class="muted">薄宪章 <code>AGENTS.md</code> + 渐进式技能 <code>project-guardian</code> + <code>docs/tracking/</code> 固定文件名追踪文档 + Git 门口自动安检闸机</p>
         </div>
         <div class="subcard" style="font-size:12.5px;">
-          <div style="font-weight:700;">可见母版总仓（Finder 文稿直达）</div>
+          <div style="font-weight:700;">母版目录示例</div>
           <code>~/Documents/Agent-Workflow-Kit/</code>
         </div>
       </div>
@@ -214,7 +214,7 @@
 
         <div class="card">
           <div class="row-between" style="margin-bottom:8px;">
-            <span class="muted" style="font-weight:600;">附：终端一行命令手动初始化（仅在你想自己跑脚本时用）</span>
+            <span class="muted" style="font-weight:600;">可选命令（示例假设母版在 ~/Documents/Agent-Workflow-Kit）</span>
             <button id="copy-cli-btn">复制命令</button>
           </div>
           <pre id="generated-cli"></pre>
@@ -327,13 +327,13 @@
 
       <div class="card">
         <h2>本机安装地图与日后升级方法</h2>
-        <p class="muted">以后如果你修改了可见母版总仓里的模板或脚本，只需执行下面一行同步命令，即可同时刷新 Antigravity 与 Codex 两端：</p>
+        <p class="muted">如需两端采用同一套技能和全局规则，请先备份自定义规则，再从母版目录运行下面的命令。</p>
         <div class="grid-3" style="margin:10px 0;">
-          <div class="subcard"><strong>1. 可见母版总仓（改这里）</strong><br><code>~/Documents/Agent-Workflow-Kit/</code></div>
+          <div class="subcard"><strong>1. 母版目录示例</strong><br><code>~/Documents/Agent-Workflow-Kit/</code></div>
           <div class="subcard"><strong>2. Antigravity 全局生效目录</strong><br><code>~/.gemini/config/skills/project-guardian</code></div>
           <div class="subcard"><strong>3. Codex 全局生效目录</strong><br><code>~/.codex/skills/project-guardian</code></div>
         </div>
-        <pre>python3 ~/Documents/Agent-Workflow-Kit/scripts/sync_global.py</pre>
+        <pre>python3 scripts/sync_global.py</pre>
       </div>
     </div>
   </div>
@@ -379,7 +379,7 @@
 
       let prompt = '', cli = '', steps = [];
       if (scene === 'new') {
-        prompt = `调用 project-guardian 初始化当前新项目${extraText}，装好单主线 Git 与自动安检闸机；然后用 /grill-me（配合生活化比喻每次问我 1 个关键问题）跟我对齐需求。\n\n我想做的项目是：${goal || '【在这里用大白话填写你的想法】'}`;
+        prompt = `调用 project-guardian 初始化当前新项目${extraText}，装好单主线 Git 与自动安检闸机；然后用生活化比喻，每次问我 1 个关键问题，跟我对齐需求。\n\n我想做的项目是：${goal || '【在这里用大白话填写你的想法】'}`;
         cli = `python3 ~/Documents/Agent-Workflow-Kit/skills/project-guardian/scripts/init_project.py . ${flags.join(' ')}`;
         steps = [
           '自动生成根目录 AGENTS.md、docs/tracking/ 追踪文档夹，并将初始化实测结果写回 STATUS.md；',
@@ -445,7 +445,7 @@
 
     const stepsData = [
       {
-        title: 'Phase 1 · 问透画图（/grill-me 比喻访谈 + FORMULA 公式铁契）',
+        title: 'Phase 1 · 问透画图（逐题对齐需求与公式口径）',
         metaphor: '好比装修动工前，设计师不能自己瞎猜乱砸墙，也不能甩一堆水电行话糊弄你，而是每次拿一个生活化比方跟你确认清楚，把蓝图和预算单白纸黑字锁死。',
         owner: '回答 AI 单次提出的 1 个选择题（每题都有推荐项）；核对关键计算样例对不对。',
         aiRule: '从用户初步想法出发，先查仓库和高星且近期有实质更新的 GitHub 同类项目，记录可借鉴的实现；涉及算钱/指标/尺寸换算时，强制填写 FORMULA.md 七要素（锁死同源分子分母池、舍入精度、总额守恒等式与 3 组手算标准答案）。',
