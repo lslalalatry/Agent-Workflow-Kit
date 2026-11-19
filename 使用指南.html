@@ -170,8 +170,15 @@
           <label class="radio-card">
             <input type="radio" name="scene" value="legacy" />
             <div>
-              <div style="font-weight:600;font-size:13px;">老项目半途接入（已有代码/数据库）</div>
+              <div style="font-weight:600;font-size:13px;">已有项目首次接入</div>
               <div class="muted" style="font-size:12px;">不删改现有数据，登记白名单保护已有库与主干，补齐追踪文档</div>
+            </div>
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="scene" value="upgrade" />
+            <div>
+              <div style="font-weight:600;font-size:13px;">已接入的老项目怎么升级</div>
+              <div class="muted" style="font-size:12px;">项目以前用过 project-guardian，现在要补上提交和推送前的代码审查</div>
             </div>
           </label>
           <label class="radio-card">
@@ -374,8 +381,9 @@
       const hasDecisions = optDecisions.checked;
       const goal = userGoal.value.trim();
 
-      addonWrap.classList.toggle('hidden', !(scene === 'new' || scene === 'legacy'));
-      goalWrap.classList.toggle('hidden', scene === 'resume' || scene === 'audit');
+      const isSetup = scene === 'new' || scene === 'legacy';
+      addonWrap.classList.toggle('hidden', !isSetup);
+      goalWrap.classList.toggle('hidden', !isSetup);
 
       const extras = [];
       if (hasFormula) extras.push('开启 FORMULA.md 计算公式契约');
@@ -405,6 +413,12 @@
           '只读梳理当前真实代码现状，建立干净无日期后缀的 docs/tracking/ 追踪文档基线；',
           '装好自动安检闸机，之后提交实现改动时会检查进度文档是否同步，并检查分支状态。'
         ];
+      } else if (scene === 'upgrade') {
+        prompt = '用最新版 project-guardian 升级当前项目，沿用现有配置，保留业务代码、数据库、未提交改动和已有 Git 钩子的功能，补上提交前和推送前的 AI 代码审查，并在本地实测两处都能拦住未经审查的改动，再把结果告诉我。';
+        steps = [
+          '在旧项目根目录核对现有配置、未提交改动和已有 Git 钩子，使用最新版技能更新这个本地工作副本。',
+          '分别在本地验证未审改动会被拦在提交前，含未审提交的推送也会被拦下，并报告两项结果。'
+        ];
       } else if (scene === 'resume') {
         prompt = `按 project-guardian 的多对话交接规则，重读工作区中的最新决策、TODO、STATUS 和相关产品或公式说明，核对未提交改动后继续。交接时分别核对 commit 和 push 授权。`;
         cli = `python3 ~/Documents/Agent-Workflow-Kit/skills/project-guardian/scripts/verify_guardrails.py`;
@@ -424,6 +438,7 @@
 
       promptOut.textContent = prompt;
       cliOut.textContent = cli;
+      cliOut.closest('.card').classList.toggle('hidden', !cli);
       happensList.innerHTML = steps.map(s => `<li>${s}</li>`).join('');
     }
     document.querySelectorAll('input[name="scene"]').forEach(r => r.addEventListener('change', updateLauncher));
