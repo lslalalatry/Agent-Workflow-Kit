@@ -1,7 +1,7 @@
 ---
 name: project-guardian
 description: >-
-  Enforces end-to-end project consistency, ASD-STE tracking documents (SPEC, FORMULA, STATUS, TODO, BACKLOG, DECISIONS), dual red-team specification audits, single-trunk Git discipline, and zero-sprawl storage guardrails across any project. Use when bootstrapping a project, drafting or auditing specifications and formulas, decomposing tasks, resuming tasks, syncing user decisions across chats, coordinating Git handoffs, or verifying completion gates.
+  Enforces end-to-end project consistency, ASD-STE tracking documents (SPEC, FORMULA, STATUS, TODO, BACKLOG, DECISIONS), dual red-team specification audits, single-trunk Git discipline, and zero-sprawl storage guardrails across any project. Use when bootstrapping a project, drafting or auditing specifications and formulas, decomposing tasks, resuming tasks, syncing user decisions across chats, reviewing staged changes before commit or push, coordinating Git handoffs, or verifying completion gates.
 ---
 
 # Project Guardian — 通用项目一致性与追踪文档工作流
@@ -9,6 +9,8 @@ description: >-
 本 Skill 为任意类型的软件、数据、AI 管线或混合工程项目提供统一的生命周期管控。日常简单问答或单行明确修复无需启动完整仪式；当进入**新项目立项、新阶段开启、核心逻辑/公式变更、跨窗口长任务接力或阶段收尾验收**时，按下方阶段按需读取对应手册执行。
 
 ---
+
+准备提交或上传时，先按[AI 代码审查](./references/07-code-review.md)实读本次差异，修复阻断问题并登记对应版本。推送时复用已经核对的记录。
 
 收到用户拍板、在旧对话继续动手或准备 Git 交接时，先读[多对话决策与交接](./references/06-shared-decisions.md)。收到拍板的对话在本轮同步所有受影响文档。多对话项目初始化时使用 `--with-decisions`。
 
@@ -20,7 +22,7 @@ description: >-
    ```
    - 自动创建或补齐根目录 `AGENTS.md` 与 `docs/tracking/` 追踪文档（默认绝不覆盖已有文件）；
    - 若尚未初始化 Git，自动初始化单主线 `main`；
-   - 安装 Git 提交检查，实际检查初始状态，将通过或失败原因写回 STATUS.md。
+   - 安装 Git 提交与推送检查，实际检查初始状态，将通过或失败原因写回 STATUS.md。
 
 2. **手动运行自动安检闸机（收尾提交前必跑）**：
    ```bash

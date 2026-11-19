@@ -18,27 +18,40 @@ from typing import List
 
 from verify_guardrails import parse_agents_profile, resolve_tracking_dir
 
-PRE_COMMIT_MARKER = "# >>> project-guardian-gatekeeper >>>"
-PRE_COMMIT_SNIPPET = """# >>> project-guardian-gatekeeper >>>
-GUARD_SCRIPT=""
+HOOK_LOOKUP = """GUARD_SCRIPT=""
 for candidate in \\
   "$(git rev-parse --show-toplevel)/.agents/skills/project-guardian/scripts/verify_guardrails.py" \\
   "$HOME/.gemini/config/skills/project-guardian/scripts/verify_guardrails.py" \\
   "$HOME/.codex/skills/project-guardian/scripts/verify_guardrails.py" \\
   "$HOME/Documents/Agent-Workflow-Kit/skills/project-guardian/scripts/verify_guardrails.py"; do
-  if [ -f "$candidate" ]; then
+  if [ -f "$candidate" ] && [ -f "${candidate%/*}/code_review.py" ]; then
     GUARD_SCRIPT="$candidate"
     break
   fi
 done
-if [ -n "$GUARD_SCRIPT" ]; then
-  python3 "$GUARD_SCRIPT" --hook pre-commit || exit 1
-else
-  echo "Project Guardian: 找不到已安装的检查脚本" >&2
+if [ -z "$GUARD_SCRIPT" ]; then
+  echo "Project Guardian: 找不到新版检查脚本，请安装或更新 project-guardian" >&2
   exit 1
 fi
-# <<< project-guardian-gatekeeper <<<
+REVIEW_SCRIPT="${GUARD_SCRIPT%/*}/code_review.py"
 """
+
+HOOKS = {
+    "pre-commit": HOOK_LOOKUP + """python3 "$REVIEW_SCRIPT" check-staged || exit 1
+python3 "$GUARD_SCRIPT" --hook pre-commit || exit 1
+""",
+    # Git supplies one ref update per line. Replay it for any existing hook below us.
+    "pre-push": HOOK_LOOKUP + """guardian_push_refs=$(cat) || exit 1
+if [ -n "$guardian_push_refs" ]; then
+  python3 "$REVIEW_SCRIPT" check-push <<GUARDIAN_REFS || exit 1
+$guardian_push_refs
+GUARDIAN_REFS
+  exec 0<<GUARDIAN_REFS
+$guardian_push_refs
+GUARDIAN_REFS
+fi
+""",
+}
 
 DEFAULT_GITIGNORE_LINES = [
     ".DS_Store",
@@ -102,12 +115,12 @@ def ensure_gitignore(target: Path) -> str:
     return f"已向 .gitignore 补充 {len(missing)} 条安全忽略项"
 
 
-def install_pre_commit_hook(target: Path) -> str:
+def install_hook(target: Path, name: str) -> str:
     def git_path(*args):
         output = subprocess.check_output(["git", "rev-parse", *args], cwd=target, text=True)
         return (target / output.strip()).resolve()
 
-    raw_hook = subprocess.check_output(["git", "rev-parse", "--git-path", "hooks/pre-commit"], cwd=target, text=True).strip()
+    raw_hook = subprocess.check_output(["git", "rev-parse", "--git-path", f"hooks/{name}"], cwd=target, text=True).strip()
     hook_path = target / raw_hook
     hook_file = hook_path.parent.resolve() / hook_path.name
     common_dir = git_path("--git-common-dir")
@@ -118,13 +131,14 @@ def install_pre_commit_hook(target: Path) -> str:
     if hook_file.is_symlink():
         raise ValueError(f"已有提交钩子是符号链接，请由维护者在实际钩子中接入检查：{hook_file}")
     current = hook_file.read_text(encoding="utf-8") if hook_file.exists() else ""
-    if PRE_COMMIT_MARKER in current:
-        end_marker = "# <<< project-guardian-gatekeeper <<<"
-        begin = current.index(PRE_COMMIT_MARKER)
-        end = current.find(end_marker, begin)
-        if end < 0:
-            raise ValueError("既有 pre-commit 中的 Project Guardian 区段不完整")
-        current = current[:begin] + current[end + len(end_marker):].removeprefix("\n")
+    for tag in ("gatekeeper", "original-hook"):
+        start, stop = f"# >>> project-guardian-{tag} >>>", f"# <<< project-guardian-{tag} <<<"
+        if start in current:
+            begin = current.index(start)
+            end = current.find(stop, begin)
+            if end < 0:
+                raise ValueError("既有钩子中的 Project Guardian 区段不完整")
+            current = current[:begin] + current[end + len(stop):].removeprefix("\n")
     if current.startswith("#!"):
         shebang, _, body = current.partition("\n")
         words = shlex.split(shebang[2:])
@@ -135,13 +149,21 @@ def install_pre_commit_hook(target: Path) -> str:
             raise ValueError(f"保留已有 {program} 钩子，请在该钩子中显式接入验收脚本：{hook_file}")
     else:
         shebang, body = "#!/bin/sh", current
-    # Run before a pre-existing handler can return early. Keep its interpreter and arguments.
-    content = shebang + "\n" + PRE_COMMIT_SNIPPET + body
+    checks = HOOKS[name]
+    prefix = ""
+    if name == "pre-commit" and body.strip():
+        # A formatter can re-stage files or exit early. Check the final index in the parent shell.
+        prefix = "# >>> project-guardian-original-hook >>>\n(\n:\n# <<< project-guardian-original-hook <<<\n"
+        checks = ")\nguardian_status=$?\n[ \"$guardian_status\" -eq 0 ] || exit \"$guardian_status\"\n" + checks
+        prefix += body.rstrip("\n") + "\n"
+        body = ""
+    section = "# >>> project-guardian-gatekeeper >>>\n" + checks + "# <<< project-guardian-gatekeeper <<<\n"
+    content = shebang + "\n" + prefix + section + body
     if not hook_file.exists() or hook_file.read_text(encoding="utf-8") != content:
         hook_file.write_text(content, encoding="utf-8")
     mode = hook_file.stat().st_mode
     hook_file.chmod(mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-    return "已挂载 .git/hooks/pre-commit 自动安检闸机"
+    return f"已挂载 {name} 检查：{hook_file}"
 
 
 def enable_profile_documents(path: Path, requested: List[str]) -> None:
@@ -210,7 +232,7 @@ def main() -> int:
     parser.add_argument("--minimal", action="store_true", help="Create only the 4 core tracking docs.")
     parser.add_argument("--with-formula", action="store_true", help="Enable and create FORMULA.md.")
     parser.add_argument("--with-decisions", action="store_true", help="Enable and create DECISIONS.md.")
-    parser.add_argument("--no-hook", action="store_true", help="Skip installing Git pre-commit hook.")
+    parser.add_argument("--no-hook", action="store_true", help="Skip installing Git pre-commit and pre-push hooks.")
     args = parser.parse_args()
 
     target = Path(args.target).expanduser().resolve()
@@ -275,10 +297,11 @@ def main() -> int:
 
     setup_errors = []
     if not args.no_hook:
-        try:
-            logs.append(install_pre_commit_hook(target))
-        except (OSError, ValueError, subprocess.SubprocessError) as exc:
-            setup_errors.append(f"提交钩子接入失败：{exc}")
+        for hook_name in HOOKS:
+            try:
+                logs.append(install_hook(target, hook_name))
+            except (OSError, ValueError, subprocess.SubprocessError) as exc:
+                setup_errors.append(f"{hook_name} 钩子接入失败：{exc}")
     verified = verify_initial_state(target, tracking_dst / "STATUS.md", setup_errors)
 
     print(f"Project Guardian 初始化实测{'通过' if verified else '失败'}：{target}")

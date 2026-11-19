@@ -8,6 +8,11 @@ import sys
 import tempfile
 import unittest
 
+if __package__:
+    from .review_fixture import record_fixture_review
+else:
+    from review_fixture import record_fixture_review
+
 SKILL = Path(os.environ.get("GUARDIAN_TEST_SKILL", Path(__file__).resolve().parents[1] / "skills/project-guardian"))
 SCRIPTS = SKILL / "scripts"
 
@@ -36,6 +41,8 @@ class SharedDecisionTests(unittest.TestCase):
         self.cmd("git", "commit", "-m", "existing project with no decision ledger")
 
     def cmd(self, *args, ok=True):
+        if args[:2] == ("git", "commit"):
+            record_fixture_review(self.cmd, SCRIPTS)
         proc = subprocess.run(args, cwd=self.root, env=self.env, capture_output=True, text=True)
         self.assertEqual(proc.returncode == 0, ok, proc.stdout + proc.stderr)
         return proc.stdout + proc.stderr

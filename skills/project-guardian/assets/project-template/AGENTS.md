@@ -65,7 +65,8 @@
    - 开工预检：读 `STATUS.md` 与 `TODO.md`，从工作区实读最新决定、相关 SPEC 和 FORMULA，检查分支以及其他对话已暂存或未提交的修改；
    - 最小实现与端到端验证：按技能 references/05-acceptance.md 实跑手算样例与默认入口验收，对照原始目标并记录结果；
    - 文档三联同步：同步更新 `SPEC.md`（若有行为变更）、`FORMULA.md`（若有公式变更）、`TODO.md` 与 `STATUS.md`（刷新 **「断点接力锚点」**，确保流中断或换新窗口一句“继续”即可无损恢复）。
-5. **阶段 5 · 自动安检闸机收口**：运行 `verify_guardrails.py`（已挂载于 `.git/hooks/pre-commit`），确认单主线、零未登记数据库/大副本、追踪文档已同步且未超限。交接节点按项目已有授权分别执行 commit、push，缺少授权时提示实际待办。
+5. 提交或上传前，AI 按 `project-guardian/references/07-code-review.md` 审查暂存差异与受影响调用方。检查重复实现、无用分支、额外依赖和行为回归，修复阻断项并记录本次实读的版本。推送复用匹配的记录。
+6. **阶段 5 · 自动安检闸机收口**：运行 `verify_guardrails.py`（已挂载于 `.git/hooks/pre-commit`），确认单主线、零未登记数据库/大副本、追踪文档已同步且未超限。交接节点按项目已有授权分别执行 commit、push，缺少授权时提示实际待办。
    - **硬禁令**：未经用户当轮明确书面指令，**绝对禁止使用 `git commit --no-verify` 或修改/跳过 `.git/hooks/pre-commit`**。
 
 ---

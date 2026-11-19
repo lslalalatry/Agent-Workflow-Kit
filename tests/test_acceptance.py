@@ -8,6 +8,11 @@ import sys
 import tempfile
 import unittest
 
+if __package__:
+    from .review_fixture import record_fixture_review
+else:
+    from review_fixture import record_fixture_review
+
 SKILL = Path(os.environ.get("GUARDIAN_TEST_SKILL", Path(__file__).resolve().parents[1] / "skills/project-guardian"))
 SCRIPTS = SKILL / "scripts"
 
@@ -42,6 +47,7 @@ class AcceptanceTests(unittest.TestCase):
         return self.call(sys.executable, str(SCRIPTS / "init_project.py"), ".", *flags, ok=ok)
 
     def commit(self, msg, ok=True):
+        record_fixture_review(self.call, SCRIPTS)
         output = self.call("git", "commit", "-m", msg, ok=ok)
         self.assertIn("安检绿灯通过" if ok else "安检红灯拦截", output)
         return output
@@ -147,6 +153,66 @@ class AcceptanceTests(unittest.TestCase):
         (self.root / "price.py").write_text("price = 15\n")
         self.call("git", "add", ".")
         self.assertIn("三组公式样例", self.commit("formula template only", ok=False))
+
+    def test_stale_review_cannot_approve_a_different_index(self):
+        self.init()
+        self.call("git", "add", ".")
+        review = [sys.executable, str(SCRIPTS / "code_review.py")]
+        self.assertIn("AI 代码审查", self.call("git", "commit", "-m", "missing", ok=False))
+        scope = record_fixture_review(self.call, SCRIPTS)
+        extra = self.root / "helper.py"
+        extra.write_text("flag = 1\n")
+        self.call("git", "add", "helper.py")
+        self.assertIn("范围已变化", self.call(*review, "record", "--scope", scope, "--summary", "stale", ok=False))
+        self.assertIn("缺少匹配", self.call("git", "commit", "-m", "stale", ok=False))
+        record_fixture_review(self.call, SCRIPTS)
+        extra.write_text("flag = 2\n")
+        self.call("git", "commit", "-m", "reviewed index only")
+        self.assertEqual(self.call("git", "show", "HEAD:helper.py"), "flag = 1\n")
+
+    def test_existing_formatter_cannot_change_the_reviewed_commit(self):
+        hook = self.root / ".git/hooks/pre-commit"
+        hook.write_text("#!/bin/sh\nprintf 'formatted\\n' > tool.txt\ngit add tool.txt\nexit 0\n")
+        hook.chmod(0o755)
+        self.init()
+        self.init()
+        self.call("git", "add", ".")
+        record_fixture_review(self.call, SCRIPTS)
+        self.assertIn("缺少匹配", self.call("git", "commit", "-m", "before formatter", ok=False))
+        self.commit("after formatter")
+        self.assertEqual(self.call("git", "show", "HEAD:tool.txt"), "formatted\n")
+
+    def test_push_checks_each_commit_and_replays_existing_hook_input(self):
+        push_hook = self.root / ".git/hooks/pre-push"
+        push_hook.write_text('#!/bin/sh\ncat > .git/old-hook-input\n')
+        push_hook.chmod(0o755)
+        self.init()
+        self.init()
+        self.assertEqual(push_hook.read_text().count("# >>> project-guardian-gatekeeper >>>"), 1)
+        self.call("git", "add", ".")
+        first_scope = record_fixture_review(self.call, SCRIPTS)
+        self.call("git", "commit", "-m", "first")
+        first = self.call("git", "rev-parse", "HEAD").strip()
+        receipt = self.root / ".git/project-guardian/reviews" / (first_scope + ".json")
+        receipt.unlink()  # Simulate an earlier commit that lacks local review evidence.
+        self.status("second")
+        self.call("git", "add", "docs/tracking/STATUS.md")
+        self.commit("second")
+        second = self.call("git", "rev-parse", "HEAD").strip()
+        with tempfile.TemporaryDirectory() as remote:
+            self.call("git", "init", "--bare", remote)
+            self.assertIn(first, self.call("git", "push", remote, "main", ok=False))
+            self.call("git", "--git-dir", remote, "rev-parse", "--verify", "refs/heads/main", ok=False)
+            record_fixture_review(self.call, SCRIPTS, "--commit", first)
+            self.call("git", "push", remote, "main")
+            self.assertEqual(second, self.call("git", "--git-dir", remote, "rev-parse", "refs/heads/main").strip())
+            self.assertEqual((self.root / ".git/old-hook-input").read_text().split(),
+                             ["refs/heads/main", second, "refs/heads/main", "0" * len(first)])
+            receipt.unlink()  # Already on remote. Later pushes check only the outgoing range.
+            self.status("third")
+            self.call("git", "add", "docs/tracking/STATUS.md")
+            self.commit("third")
+            self.call("git", "push", remote, "main")
 
     def test_existing_database_init_failure_then_recovery(self):
         db = self.root / "existing.sqlite"
