@@ -123,16 +123,25 @@
           <div class="badges">
             <span class="badge primary">适用于 Antigravity 和 Codex</span>
             <span class="badge">双击离线即用</span>
-            <span class="badge">100% 跨行业通用</span>
           </div>
           <h1>Project Guardian · 通用 AI 项目治理与「追踪文档」使用手册</h1>
-          <p class="muted">薄宪章 <code>AGENTS.md</code> + 渐进式技能 <code>project-guardian</code> + <code>docs/tracking/</code> 固定文件名追踪文档 + Git 门口自动安检闸机</p>
+          <p class="muted">用 AI 做跨天、跨对话的项目时，把需求、决定、待办和实测结果留在项目里。接手的人可以查到上次改了什么，以及用户平时打开的入口是否已经验收。</p>
         </div>
         <div class="subcard" style="font-size:12.5px;">
           <div style="font-weight:700;">母版目录示例</div>
           <code>~/Documents/Agent-Workflow-Kit/</code>
         </div>
       </div>
+
+      <details open style="margin-top:14px;">
+        <summary><strong>这个工具能帮我解决什么问题？</strong></summary>
+        <ul>
+          <li><strong>从想法到可做的需求。</strong>AI 盘点现有项目，优先调研同领域星数较高、近期有相关功能更新或修复的 GitHub 项目，再和你确定值得复用的部分、要交付的功能及验收条件。</li>
+          <li><strong>让两个对话沿用同一条规则。</strong>你在一个对话拍板后，决定和受影响的文档会一起更新。另一个对话通过工具写回旧草稿时，必须先重读并合并变化。</li>
+          <li><strong>查清任务做到了哪里。</strong>老项目接入时先盘点实际入口和数据库。正式验收时，AI 从登记的入口读取真实结果。缺少数据或权限时，这项任务保留待验。</li>
+        </ul>
+        <p><strong>销售报表示例</strong>　1 件卖 10 元、9 件卖 20 元，按成交件数计算的均价应为 19 元。如果函数已经算出 19 元、平时打开的首页仍显示 15 元，待办应保留为「候选待验」。如果 9 件 20 元的成交全部退款且规则要求剔除，首页应显示 10 元。第一次验收时，需要给这个项目登记首页、测试数据及这些预期值。</p>
+      </details>
 
       <div class="tabs">
         <button class="tab-btn active" data-tab="launcher">1. 一键口令生成器（日常必用）</button>
@@ -393,7 +402,7 @@
         steps = [
           '绝不覆盖已有文件或数据库，将现有入口和正式数据库填入 AGENTS.md 白名单（防另起炉灶、防多复制新库）；',
           '只读梳理当前真实代码现状，建立干净无日期后缀的 docs/tracking/ 追踪文档基线；',
-          '装好自动安检闸机，从此每次修改都会强制同步追踪文档并拦截残留分支。'
+          '装好自动安检闸机，之后提交实现改动时会检查进度文档是否同步，并检查分支状态。'
         ];
       } else if (scene === 'resume') {
         prompt = `按 project-guardian 的多对话交接规则，重读工作区中的最新决策、TODO、STATUS 和相关产品或公式说明，核对未提交改动后继续。交接时分别核对 commit 和 push 授权。`;
@@ -506,7 +515,7 @@
     const docsData = {
       AGENTS: {
         name: 'AGENTS.md · 项目根目录常驻薄宪章（约 9 KB）',
-        badge: '每轮对话 100% 自动加载',
+        badge: '项目级协作规则',
         role: '施工队墙上的最高守则。第 1–5 节是跨行业通用的八大公理与追踪文档规矩（零修改直接复用），第 6 节是 10 行项目配置卡（登记项目主入口、允许的数据库白名单、唯一端口号）。',
         redline: '硬上限 <= 20 KB（防 Antigravity 24KB / Codex 32KiB 静默截断）；只放铁律与路由，长篇细节进 SPEC.md。',
         example: `project_name: "order-analytics"\nprimary_branch: "main"\ntracking_dir: "docs/tracking"\nenable_formula_doc: true\nallowed_storage_paths:\n  - "data/main.sqlite"   # 除它之外多建任何库都会被闸机拦截`
@@ -530,7 +539,7 @@
         badge: '必选 · 三态勾选防假完成',
         role: '只放当前正在攻关的里程碑任务，切成单轮 2–5 分钟能闭环验证的小步子。',
         redline: '严格区分三种状态：[ ] 待办、[~] 离线/局部候选待验、[x] 已在默认正式入口端到端实测通过（彻底消灭提前乱打勾）。',
-        example: `| 任务 ID | 状态 | 微任务动作（ASD-STE 主动句） | 验收标准（DoD） |\n|---|---|---|---|\n| T1.1 | [x] | 实现哈希索引幂等合并函数 | pytest tests/test_merge.py 退出码 0 |\n| T1.2 | [~] | 接入主界面筛选全选与全清联动 | 待浏览器正式入口实测核对 |`
+        example: `| 任务 ID | 状态 | 微任务动作（ASD-STE 主动句） | 验收标准（DoD） |\n|---|---|---|---|\n| T1.1 | [x] | 从默认导入页连续导入同一批 3 条订单两次 | 仍显示 3 条，已核对入口实测记录 docs/tracking/evidence/import.json |\n| T1.2 | [~] | 接入主界面筛选全选与全清联动 | 待浏览器正式入口实测核对 |`
       },
       BACKLOG: {
         name: 'docs/tracking/BACKLOG.md · 暂缓需求池与历史变更台账',
