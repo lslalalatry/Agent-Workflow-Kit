@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Guardian · 通用 AI 项目治理与追踪文档使用指南</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --sub: #f1f4f9;
+      --border: #dfe5ef;
+      --fg: #141b29;
+      --muted: #5b667a;
+      --primary: #2563eb;
+      --primary-fg: #ffffff;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --ok: #15803d;
+      --ok-bg: #f0fdf4;
+      --code: #0f172a;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --sub: #21262d;
+        --border: #30363d;
+        --fg: #e6edf3;
+        --muted: #8b949e;
+        --primary: #3b82f6;
+        --primary-fg: #ffffff;
+        --danger: #f87171;
+        --danger-bg: #2d1619;
+        --ok: #4ade80;
+        --ok-bg: #12281c;
+        --code: #e6edf3;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px 16px 48px;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .wrap { max-width: 1060px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+    .subcard { background: var(--sub); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .row-between { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+    .badge { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 6px; border: 1px solid var(--border); background: var(--sub); color: var(--muted); }
+    .badge.primary { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+    .badge.ok { background: var(--ok-bg); color: var(--ok); border-color: var(--ok); }
+    .badge.danger { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+    h1 { font-size: 21px; margin: 4px 0; }
+    h2 { font-size: 16px; margin: 0 0 6px; }
+    h3 { font-size: 15px; margin: 0; }
+    p { margin: 4px 0; }
+    .muted { color: var(--muted); font-size: 13px; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; color: var(--code); }
+    code { background: var(--sub); padding: 1px 5px; border-radius: 4px; }
+    pre { margin: 0; padding: 14px; border-radius: 10px; background: var(--sub); border: 1px solid var(--border); white-space: pre-wrap; word-break: break-word; line-height: 1.65; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+    button {
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--sub);
+      color: var(--fg);
+      border-radius: 8px;
+      padding: 7px 13px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    button:hover { opacity: 0.92; }
+    button.active, button.primary-btn {
+      background: var(--primary);
+      color: var(--primary-fg);
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+    .grid-12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+    .col-5 { grid-column: span 5; }
+    .col-7 { grid-column: span 7; }
+    .col-4 { grid-column: span 4; }
+    .col-8 { grid-column: span 8; }
+    .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (max-width: 820px) {
+      .col-5, .col-7, .col-4, .col-8 { grid-column: span 12; }
+      .grid-5, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    }
+    .radio-card {
+      display: flex; align-items: flex-start; gap: 9px; padding: 10px 12px;
+      border: 1px solid var(--border); border-radius: 9px; cursor: pointer; margin-top: 7px;
+    }
+    .radio-card:hover { background: var(--sub); }
+    textarea {
+      width: 100%; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--fg); padding: 9px 11px; font-size: 13px; font-family: inherit;
+    }
+    .hidden { display: none !important; }
+    .step-card { text-align: left; padding: 12px; border-radius: 10px; background: var(--card); }
+    .step-card.selected { border: 2px solid var(--primary); background: var(--sub); }
+    .tree-btn { width: 100%; text-align: left; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; margin-top: 4px; }
+    .tree-btn.sub { padding-left: 24px; }
+    ul { margin: 6px 0 0; padding-left: 20px; }
+    li { margin-bottom: 5px; }
+    .divider { border-top: 1px solid var(--border); margin: 12px 0; padding-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Top Header -->
+    <div class="card">
+      <div class="row-between">
+        <div>
+          <div class="badges">
+            <span class="badge primary">Antigravity + Codex 双端已安装</span>
+            <span class="badge">双击离线即用</span>
+            <span class="badge">100% 跨行业通用</span>
+          </div>
+          <h1>Project Guardian · 通用 AI 项目治理与「追踪文档」使用手册</h1>
+          <p class="muted">薄宪章 <code>AGENTS.md</code> + 渐进式技能 <code>project-guardian</code> + <code>docs/tracking/</code> 固定文件名追踪文档 + Git 门口自动安检闸机</p>
+        </div>
+        <div class="subcard" style="font-size:12.5px;">
+          <div style="font-weight:700;">可见母版总仓（Finder 文稿直达）</div>
+          <code>~/Documents/Agent-Workflow-Kit/</code>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="launcher">1. 一键口令生成器（日常必用）</button>
+        <button class="tab-btn" data-tab="pipeline">2. 「装修工地」五步原理图解</button>
+        <button class="tab-btn" data-tab="docs">3. 六大「追踪文档」全解剖</button>
+        <button class="tab-btn" data-tab="simulator">4. 自动安检闸机红绿灯模拟</button>
+        <button class="tab-btn" data-tab="axioms">5. 八大通用公理与升级维护</button>
+      </div>
+    </div>
+
+    <!-- Panel 1: Launcher -->
+    <div id="panel-launcher" class="tab-panel grid-12">
+      <div class="card col-5">
+        <h2>第一步：选你当前的场景</h2>
+        <p class="muted">不用记任何代码命令，左边勾选，右边一键复制发给 AI 即可。</p>
+
+        <div style="margin-top:10px;">
+          <label class="radio-card">
+            <input type="radio" name="scene" value="new" checked />
+            <div>
+              <div style="font-weight:600;font-size:13px;">全新项目（空文件夹从零起步）</div>
+              <div class="muted" style="font-size:12px;">自动建好 AGENTS.md、追踪文档和自动闸机，并用比喻逐题对齐需求</div>
+            </div>
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="scene" value="legacy" />
+            <div>
+              <div style="font-weight:600;font-size:13px;">老项目半途接入（已有代码/数据库）</div>
+              <div class="muted" style="font-size:12px;">不删改现有数据，登记白名单保护已有库与主干，补齐追踪文档</div>
+            </div>
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="scene" value="resume" />
+            <div>
+              <div style="font-weight:600;font-size:13px;">项目多对话 / 旧窗口恢复工作</div>
+              <div class="muted" style="font-size:12px;">重读最新决定、任务和相关规格，核对尚未提交的改动</div>
+            </div>
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="scene" value="audit" />
+            <div>
+              <div style="font-weight:600;font-size:13px;">说明书写完了，单独跑「双盲红队挑刺」</div>
+              <div class="muted" style="font-size:12px;">派 2 个零上下文子 Agent 分别死磕公式逻辑漏洞与过度设计加戏</div>
+            </div>
+          </label>
+        </div>
+
+        <div id="addon-options" class="divider">
+          <div style="font-weight:600;font-size:13px;margin-bottom:6px;">按项目特征勾选附加契约</div>
+          <label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer;margin-bottom:6px;">
+            <input type="checkbox" id="opt-formula" checked />
+            <span>含算钱 / 统计指标 / 权重 / 几何换算（强制开启 <code>FORMULA.md</code>）</span>
+          </label>
+          <label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer;">
+            <input type="checkbox" id="opt-decisions" />
+            <span>多对话项目或含人工特批规则（开启 <code>DECISIONS.md</code> 防重跑覆盖）</span>
+          </label>
+        </div>
+
+        <div id="goal-input-wrap" class="divider">
+          <div style="font-weight:600;font-size:13px;margin-bottom:6px;">用大白话写一句你想做什么（选填）</div>
+          <textarea id="user-goal" rows="2" placeholder="例如：我想做一个自动化报表对账工具，先把核心汇总算准..."></textarea>
+        </div>
+      </div>
+
+      <div class="col-7" style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card" style="flex:1;">
+          <div class="row-between" style="margin-bottom:10px;">
+            <h2>第二步：复制这句话发给 AI（Antigravity / Codex 通用）</h2>
+            <button id="copy-prompt-btn" class="primary-btn">一键复制口令</button>
+          </div>
+          <pre id="generated-prompt"></pre>
+
+          <div class="divider">
+            <div style="font-weight:600;font-size:13px;">发完后 AI 会自动替你完成什么？</div>
+            <ul id="what-happens-list" class="muted"></ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="row-between" style="margin-bottom:8px;">
+            <span class="muted" style="font-weight:600;">附：终端一行命令手动初始化（仅在你想自己跑脚本时用）</span>
+            <button id="copy-cli-btn">复制命令</button>
+          </div>
+          <pre id="generated-cli"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 2: Pipeline -->
+    <div id="panel-pipeline" class="tab-panel card hidden">
+      <h2>用「装修房子」秒懂五步防翻车流水线</h2>
+      <p class="muted">点击任意阶段卡片，查看业主（你）要做什么、施工队长（AI）背后执行什么硬动作：</p>
+      <div class="grid-5" style="margin:14px 0;">
+        <button class="step-card selected" data-step="0">
+          <div style="font-weight:700;">Phase 1 · 问透画图</div>
+          <div class="muted" style="font-size:12px;">/grill-me + 公式铁契</div>
+        </button>
+        <button class="step-card" data-step="1">
+          <div style="font-weight:700;">Phase 2 · 红队挑刺</div>
+          <div class="muted" style="font-size:12px;">双盲子 Agent 找茬</div>
+        </button>
+        <button class="step-card" data-step="2">
+          <div style="font-weight:700;">Phase 3 · 拆施工单</div>
+          <div class="muted" style="font-size:12px;">ASD-STE 追踪文档</div>
+        </button>
+        <button class="step-card" data-step="3">
+          <div style="font-weight:700;">Phase 4 · 微步施工</div>
+          <div class="muted" style="font-size:12px;">单主线 + 零克隆库</div>
+        </button>
+        <button class="step-card" data-step="4">
+          <div style="font-weight:700;">Phase 5 · 门口闸机</div>
+          <div class="muted" style="font-size:12px;">Git 自动红绿灯安检</div>
+        </button>
+      </div>
+      <div id="step-detail" class="subcard"></div>
+    </div>
+
+    <!-- Panel 3: Docs Anatomy -->
+    <div id="panel-docs" class="tab-panel grid-12 hidden">
+      <div class="card col-4">
+        <h2>标准项目目录树</h2>
+        <p class="muted">全部采用固定无日期文件名，由 Git 管理历史，严禁分裂多份日期后缀副本。</p>
+        <div style="margin-top:10px;">
+          <button class="tree-btn active" data-doc="AGENTS">├── AGENTS.md（常驻薄宪章）</button>
+          <div class="muted" style="padding:6px 10px;font-family:monospace;font-size:12.5px;">└── docs/tracking/（追踪文档夹）</div>
+          <button class="tree-btn sub" data-doc="STATUS">├── STATUS.md（必选·接力白板）</button>
+          <button class="tree-btn sub" data-doc="SPEC">├── SPEC.md（必选·竣工蓝图）</button>
+          <button class="tree-btn sub" data-doc="TODO">├── TODO.md（必选·微任务单）</button>
+          <button class="tree-btn sub" data-doc="BACKLOG">├── BACKLOG.md（必选·想法与台账）</button>
+          <button class="tree-btn sub" data-doc="FORMULA">├── FORMULA.md（涉算必开·公式契）</button>
+          <button class="tree-btn sub" data-doc="DECISIONS">└── DECISIONS.md（按需·拍板锁）</button>
+        </div>
+      </div>
+      <div class="card col-8" id="doc-detail"></div>
+    </div>
+
+    <!-- Panel 4: Gatekeeper Simulator -->
+    <div id="panel-simulator" class="tab-panel grid-12 hidden">
+      <div class="card col-5">
+        <h2>体验门口「自动安检闸机」</h2>
+        <p class="muted">勾选常见的 AI 偷懒/违规动作，实时查看 AI 执行 <code>git commit</code> 时的拦截效果：</p>
+        <div style="display:flex;flex-direction:column;gap:8px;margin:12px 0;">
+          <label class="subcard" style="display:flex;gap:8px;cursor:pointer;font-size:13px;">
+            <input type="checkbox" class="sim-chk" value="unsynced" checked />
+            <span>改了代码（如 <code>src/app.js</code>），但忘了同步更新 <code>STATUS.md</code></span>
+          </label>
+          <label class="subcard" style="display:flex;gap:8px;cursor:pointer;font-size:13px;">
+            <input type="checkbox" class="sim-chk" value="extradb" />
+            <span>偷偷复制了一个未登记的 <code>data/test_copy.duckdb</code> 数据库</span>
+          </label>
+          <label class="subcard" style="display:flex;gap:8px;cursor:pointer;font-size:13px;">
+            <input type="checkbox" class="sim-chk" value="branch" />
+            <span>回到 <code>main</code> 主线，但忘了清理临时的 <code>exp/try-algo</code> 分支</span>
+          </label>
+          <label class="subcard" style="display:flex;gap:8px;cursor:pointer;font-size:13px;">
+            <input type="checkbox" class="sim-chk" value="bloat" />
+            <span>把流水账全塞进 <code>STATUS.md</code> 写到了 135 行（超过 100 行红线）</span>
+          </label>
+          <label class="subcard" style="display:flex;gap:8px;cursor:pointer;font-size:13px;">
+            <input type="checkbox" class="sim-chk" value="dated" />
+            <span>新建了带日期后缀的 <code>docs/tracking/STATUS-2026-11-18.md</code></span>
+          </label>
+        </div>
+        <button id="sim-clear-btn" style="width:100%;font-weight:600;">全部修好清零（查看绿灯放行效果）</button>
+      </div>
+      <div class="card col-7">
+        <div class="row-between" style="margin-bottom:10px;">
+          <h2>闸机实时终端输出模拟</h2>
+          <span id="sim-badge" class="badge"></span>
+        </div>
+        <pre id="sim-terminal" style="min-height:240px;"></pre>
+        <p class="muted" style="margin-top:10px;">说明：如果项目确实需要 1 个正式数据库，只需在根目录 <code>AGENTS.md</code> 第 6 节 <code>allowed_storage_paths</code> 填上它的路径，闸机就会保护它，同时拦截所有额外多造出来的副本库。</p>
+      </div>
+    </div>
+
+    <!-- Panel 5: Axioms -->
+    <div id="panel-axioms" class="tab-panel hidden" style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card">
+        <h2>内置的「八大跨领域通用工程公理」</h2>
+        <div class="grid-2" style="margin-top:12px;font-size:13px;">
+          <div class="subcard"><strong>1. 唯一主干演进（防另起炉灶）</strong><br><span class="muted">存量改造必须在原入口、原数据链上演进；未经批准严禁新建平行路由或第二套页面。</span></div>
+          <div class="subcard"><strong>2. 量化与算法契约锁（防公式偷换）</strong><br><span class="muted">涉计算必先在 FORMULA.md 锁死公式、同源分子分母池、舍入位置、守恒等式与 3 组手算样例。</span></div>
+          <div class="subcard"><strong>3. 受控词表与约束前置（防上下游打架）</strong><br><span class="muted">全仓一词一义（ASD-STE）；外部模型/CLI 的步长、配额、--help 参数签名必须在第 1 步前置核实。</span></div>
+          <div class="subcard"><strong>4. 零蔓延隔离与单主线（防磁盘爆炸）</strong><br><span class="muted">常态只留唯一 main 分支（exp/* 当轮必合或必删）；测试用只读+微型夹具，严禁默认复制全量库。</span></div>
+          <div class="subcard"><strong>5. 幂等执行与人工层分离（防重跑丢配置）</strong><br><span class="muted">重复导入/重算结果恒等不双计；人工修正或特批数据独立存储，绝不被自动重跑冲掉。</span></div>
+          <div class="subcard"><strong>6. 三态验证与诚实勾选（防假完成）</strong><br><span class="muted">区分 pass / fail / unverifiable（不可验证绝不当通过）；未跑通正式默认入口最高只准标 [~]。</span></div>
+          <div class="subcard"><strong>7. 严格克制反加戏 YAGNI + 比喻讲人话</strong><br><span class="muted">严禁自行脑补未授权的重绘/计费分支；技术选择必须用生活化比喻讲清后果并给首选推荐。</span></div>
+          <div class="subcard"><strong>8. 微步切片与规模基线（防卡死与断流）</strong><br><span class="muted">单步 2–5 分钟闭环落盘锚点；长列表禁止明显 O(N^2) 全表扫描与海量节点一次性挂载。</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>本机安装地图与日后升级方法</h2>
+        <p class="muted">以后如果你修改了可见母版总仓里的模板或脚本，只需执行下面一行同步命令，即可同时刷新 Antigravity 与 Codex 两端：</p>
+        <div class="grid-3" style="margin:10px 0;">
+          <div class="subcard"><strong>1. 可见母版总仓（改这里）</strong><br><code>~/Documents/Agent-Workflow-Kit/</code></div>
+          <div class="subcard"><strong>2. Antigravity 全局生效目录</strong><br><code>~/.gemini/config/skills/project-guardian</code></div>
+          <div class="subcard"><strong>3. Codex 全局生效目录</strong><br><code>~/.codex/skills/project-guardian</code></div>
+        </div>
+        <pre>python3 ~/Documents/Agent-Workflow-Kit/scripts/sync_global.py</pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        tabBtns.forEach(b => b.classList.toggle('active', b === btn));
+        tabPanels.forEach(p => p.classList.toggle('hidden', p.id !== 'panel-' + target));
+      });
+    });
+
+    const optFormula = document.getElementById('opt-formula');
+    const optDecisions = document.getElementById('opt-decisions');
+    const userGoal = document.getElementById('user-goal');
+    const addonWrap = document.getElementById('addon-options');
+    const goalWrap = document.getElementById('goal-input-wrap');
+    const promptOut = document.getElementById('generated-prompt');
+    const cliOut = document.getElementById('generated-cli');
+    const happensList = document.getElementById('what-happens-list');
+
+    function updateLauncher() {
+      const scene = document.querySelector('input[name="scene"]:checked').value;
+      const hasFormula = optFormula.checked;
+      const hasDecisions = optDecisions.checked;
+      const goal = userGoal.value.trim();
+
+      addonWrap.classList.toggle('hidden', !(scene === 'new' || scene === 'legacy'));
+      goalWrap.classList.toggle('hidden', scene === 'resume' || scene === 'audit');
+
+      const extras = [];
+      if (hasFormula) extras.push('开启 FORMULA.md 计算公式契约');
+      if (hasDecisions) extras.push('开启 DECISIONS.md 关键决策账本');
+      const extraText = extras.length ? `（同时${extras.join('，')}）` : '（采用核心四件套精简模式）';
+
+      const flags = [];
+      if (hasFormula) flags.push('--with-formula');
+      if (hasDecisions) flags.push('--with-decisions');
+      if (!flags.length) flags.push('--minimal');
+
+      let prompt = '', cli = '', steps = [];
+      if (scene === 'new') {
+        prompt = `调用 project-guardian 初始化当前新项目${extraText}，装好单主线 Git 与自动安检闸机；然后用 /grill-me（配合生活化比喻每次问我 1 个关键问题）跟我对齐需求。\n\n我想做的项目是：${goal || '【在这里用大白话填写你的想法】'}`;
+        cli = `python3 ~/Documents/Agent-Workflow-Kit/skills/project-guardian/scripts/init_project.py . ${flags.join(' ')}`;
+        steps = [
+          '自动生成根目录 AGENTS.md、docs/tracking/ 追踪文档夹，并将初始化实测结果写回 STATUS.md；',
+          '先调研高星且近期有实质更新的 GitHub 项目，再逐题对齐取舍，起草 SPEC.md' + (hasFormula ? ' 与 FORMULA.md 七要素公式表（含 3 组手算黄金样例）' : '') + '；',
+          '自动派 2 个零上下文红队子 Agent 平行挑刺（查公式逻辑漏洞 + 查过度设计加戏），合并真问题让你拍板；',
+          '按 ASD-STE 简明法则把任务拆进 TODO.md，从默认入口实测交付结果，核对公式手算样例后勾选完成。'
+        ];
+      } else if (scene === 'legacy') {
+        prompt = `调用 project-guardian 为当前存量项目接入追踪文档和自动安检闸机${extraText}。注意：严格保留现有代码、主干入口和已有数据库不动（将现有合法数据库登记进 AGENTS.md 白名单保护），先只读盘点当前真实架构填入 docs/tracking/SPEC.md 和 STATUS.md 给我确认。${goal ? '\n\n接下来我准备推进的目标是：' + goal : ''}`;
+        cli = `python3 ~/Documents/Agent-Workflow-Kit/skills/project-guardian/scripts/init_project.py . ${flags.join(' ')}`;
+        steps = [
+          '绝不覆盖已有文件或数据库，将现有入口和正式数据库填入 AGENTS.md 白名单（防另起炉灶、防多复制新库）；',
+          '只读梳理当前真实代码现状，建立干净无日期后缀的 docs/tracking/ 追踪文档基线；',
+          '装好自动安检闸机，从此每次修改都会强制同步追踪文档并拦截残留分支。'
+        ];
+      } else if (scene === 'resume') {
+        prompt = `按 project-guardian 的多对话交接规则，重读工作区中的最新决策、TODO、STATUS 和相关产品或公式说明，核对未提交改动后继续。交接时分别核对 commit 和 push 授权。`;
+        cli = `python3 ~/Documents/Agent-Workflow-Kit/skills/project-guardian/scripts/verify_guardrails.py`;
+        steps = [
+          'AI 重读当前决定和受影响的规格，核对断点与待办；',
+          '检查已有仓库、分支及其他对话的修改；交接时提示待存档或待推送内容。'
+        ];
+      } else if (scene === 'audit') {
+        prompt = `按 project-guardian 的双盲红队审查协议，派发两个零历史包袱的独立审查子任务，对 docs/tracking/SPEC.md（及 FORMULA.md）执行平行挑刺：一个专查逻辑冲突与公式口径漏洞，一个专查过度设计加戏与五类异常边界，去重合并真问题后用通俗比喻给我拍板。`;
+        cli = `python3 ~/Documents/Agent-Workflow-Kit/skills/project-guardian/scripts/verify_guardrails.py`;
+        steps = [
+          '红队 A（逻辑与公式审计员）独立盲审：枚举打架、门禁死锁、跨池相除、舍入尾差、重跑幂等性；',
+          '红队 B（极简与边界守门员）独立盲审：擅自加戏（YAGNI）、0/空值/负数边界、不可验证项误当通过；',
+          '主 Agent 过滤吹毛求疵的假问题，把真正会翻车的硬伤翻译成直白选择题交你定夺。'
+        ];
+      }
+
+      promptOut.textContent = prompt;
+      cliOut.textContent = cli;
+      happensList.innerHTML = steps.map(s => `<li>${s}</li>`).join('');
+    }
+    document.querySelectorAll('input[name="scene"]').forEach(r => r.addEventListener('change', updateLauncher));
+    optFormula.addEventListener('change', updateLauncher);
+    optDecisions.addEventListener('change', updateLauncher);
+    userGoal.addEventListener('input', updateLauncher);
+    updateLauncher();
+
+    function bindCopy(btnId, sourceEl, label) {
+      const btn = document.getElementById(btnId);
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(sourceEl.textContent);
+          btn.textContent = '已复制 ✓';
+          setTimeout(() => { btn.textContent = label; }, 1500);
+        } catch (_) {
+          const range = document.createRange();
+          range.selectNodeContents(sourceEl);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          btn.textContent = '已选中，按 Cmd+C 复制';
+          setTimeout(() => { btn.textContent = label; }, 2000);
+        }
+      });
+    }
+    bindCopy('copy-prompt-btn', promptOut, '一键复制口令');
+    bindCopy('copy-cli-btn', cliOut, '复制命令');
+
+    const stepsData = [
+      {
+        title: 'Phase 1 · 问透画图（/grill-me 比喻访谈 + FORMULA 公式铁契）',
+        metaphor: '好比装修动工前，设计师不能自己瞎猜乱砸墙，也不能甩一堆水电行话糊弄你，而是每次拿一个生活化比方跟你确认清楚，把蓝图和预算单白纸黑字锁死。',
+        owner: '回答 AI 单次提出的 1 个选择题（每题都有推荐项）；核对关键计算样例对不对。',
+        aiRule: '从用户初步想法出发，先查仓库和高星且近期有实质更新的 GitHub 同类项目，记录可借鉴的实现；涉及算钱/指标/尺寸换算时，强制填写 FORMULA.md 七要素（锁死同源分子分母池、舍入精度、总额守恒等式与 3 组手算标准答案）。',
+        prevent: '彻底杜绝：AI 脑补你不想要的复杂重绘/计费功能、偷偷把加权均价改成简单平均、不同样本池乱除。'
+      },
+      {
+        title: 'Phase 2 · 双盲红队平行挑刺（写代码前先抓图纸漏洞）',
+        metaphor: '蓝图画好后先不急着买砖施工，而是请两位没参加刚才讨论、不讲情面的独立监理进来挑刺：一位专门拿计算器查账本逻辑，一位专门砍多余华而不实的设计。',
+        owner: '看一眼主 Agent 提炼出的 1~3 个真漏洞选择题，拍板采用推荐改法。',
+        aiRule: '向子 Agent 提供用户原始目标、SPEC.md 和 FORMULA.md 原文（零聊天妥协包袱），平行核查枚举冲突、门禁死锁、0/空值边界与过度设计，去重后汇总结论。',
+        prevent: '彻底杜绝：第一步允许生成的结构到第五步被门禁自己拦死、同一字段叫两个英文名互不相认。'
+      },
+      {
+        title: 'Phase 3 · ASD-STE 受控法则拆解追踪文档',
+        metaphor: '把定稿蓝图拆成施工队每天能看懂、绝不会产生歧义的标准施工卡（一句只写一个动作、一个零件只叫一个固定名字），挂上工地白板。',
+        owner: '基本零操作，扫一眼 TODO.md 里的里程碑顺序合不合心意即可。',
+        aiRule: '按中英双语 ASD-STE100 八条铁律生成/更新 docs/tracking/ 下的固定无日期文件；禁用“尽量/原则上/视情况”等和稀泥词汇；把大任务切成 2–5 分钟可闭环的微任务。',
+        prevent: '彻底杜绝：几万字谁也看不懂的状态长文、带日期后缀的多份混乱文档副本。'
+      },
+      {
+        title: 'Phase 4 · 单主线零克隆微步施工 + 实时接力锚点',
+        metaphor: '工地只留一条主通道（main 分支），搭临时脚手架测试完当场必须拆干净；绝不在院子里乱堆十几桶废料副本（多余数据库）；每干完一小步立刻在白板写清交接点。',
+        owner: '验收阶段性成果；哪怕中途网络断流或换新窗口，只需发一句“从断点继续”。',
+        aiRule: '测试优先用只读连接 + 微型夹具小样本；未在默认正式入口实测通过的任务最高只能标 [~] 候选待验，严禁假勾选 [x]；每步刷新 STATUS.md 的「断点接力锚点」。',
+        prevent: '彻底杜绝：外层目录堆出上百 GB 重复数据库、4000 行大文件单轮硬改导致断流失忆、离线跑通就谎报已完成。'
+      },
+      {
+        title: 'Phase 5 · 门口红外自动安检闸机（Git pre-commit 硬拦截）',
+        metaphor: '在工地出口装了一道红外自动感应门：施工队长每次想保存交工，机器自动全身扫描，漏做任何一项规矩直接亮红灯锁门，逼它自己收拾干净才能走。',
+        owner: '完全不用人工盯梢查岗！闸机全自动替你把关。',
+        aiRule: '每次提交自动运行 verify_guardrails.py 核查：是否仅剩唯一主分支？有无未白名单登记的数据库或超大文件？改了代码是否同步更新了百行内的 STATUS.md？严禁使用 --no-verify 绕过。',
+        prevent: '彻底杜绝：长任务聊到第 30 轮后 AI 忘记写进度文档、忘记删临时分支、偷偷遗留测试数据库。'
+      }
+    ];
+
+    const stepCards = document.querySelectorAll('.step-card');
+    const stepDetail = document.getElementById('step-detail');
+    function renderStep(idx) {
+      const s = stepsData[idx];
+      stepDetail.innerHTML = `
+        <h3 style="margin-bottom:8px;">${s.title}</h3>
+        <div class="card" style="padding:12px;margin-bottom:12px;font-size:13px;"><strong>生活化比喻：</strong>${s.metaphor}</div>
+        <div class="grid-3" style="font-size:13px;">
+          <div class="card" style="padding:12px;"><strong>你要做什么（业主视角）</strong><p class="muted">${s.owner}</p></div>
+          <div class="card" style="padding:12px;"><strong>AI 强制执行的硬动作</strong><p class="muted">${s.aiRule}</p></div>
+          <div class="card" style="padding:12px;"><strong>直接根治的历史大坑</strong><p class="muted">${s.prevent}</p></div>
+        </div>
+      `;
+    }
+    stepCards.forEach(c => {
+      c.addEventListener('click', () => {
+        stepCards.forEach(x => x.classList.toggle('selected', x === c));
+        renderStep(Number(c.dataset.step));
+      });
+    });
+    renderStep(0);
+
+    const docsData = {
+      AGENTS: {
+        name: 'AGENTS.md · 项目根目录常驻薄宪章（约 9 KB）',
+        badge: '每轮对话 100% 自动加载',
+        role: '施工队墙上的最高守则。第 1–5 节是跨行业通用的八大公理与追踪文档规矩（零修改直接复用），第 6 节是 10 行项目配置卡（登记项目主入口、允许的数据库白名单、唯一端口号）。',
+        redline: '硬上限 <= 20 KB（防 Antigravity 24KB / Codex 32KiB 静默截断）；只放铁律与路由，长篇细节进 SPEC.md。',
+        example: `project_name: "order-analytics"\nprimary_branch: "main"\ntracking_dir: "docs/tracking"\nenable_formula_doc: true\nallowed_storage_paths:\n  - "data/main.sqlite"   # 除它之外多建任何库都会被闸机拦截`
+      },
+      STATUS: {
+        name: 'docs/tracking/STATUS.md · 实时状态与跨窗口接力白板',
+        badge: '必选 · 硬上限 <= 100 行',
+        role: '每次你或 AI 打开项目第一眼看的白板。最重要的第 2 节是「断点接力锚点」，精确记录刚做完哪个微任务、下一步改哪个文件。',
+        redline: '严禁超过 100 行！一旦改了业务代码却没同步更新它，Git 自动闸机直接红灯拦住不让提交。',
+        example: `## 2. 断点接力锚点（Session Handoff Anchor）\n- 上一完成微任务：T1.3 完成导入幂等去重校验（实测 5000 行通过）\n- 当前工作区状态：main 单主线干净，无临时分支\n- 下一步精确指令：执行 T1.4，在 src/ledger.py 实现汇总守恒断言 INV-01`
+      },
+      SPEC: {
+        name: 'docs/tracking/SPEC.md · 系统真源说明书',
+        badge: '必选 · 只写当前真实设计',
+        role: '项目的最新竣工蓝图：明确做什么/不做什么、全局唯一标准术语与枚举字典（一词一义）、模块职责，以及 0/空值/负数/重复/缺失 五类边界矩阵。',
+        redline: '绝对禁止在 SPEC.md 里写开发进度或修 Bug 流水账，确保它永远干净反映系统现在的真实样子。',
+        example: `| 场景维度 | 0（真实零值） | NULL（缺失） | 关联匹配缺失 |\n|---|---|---|---|\n| 处理动作 | 保留并显示 0 | 显式标缺失，禁止补 0 | 标待核，禁止静默当通过 |`
+      },
+      TODO: {
+        name: 'docs/tracking/TODO.md · 当前主线微任务队列',
+        badge: '必选 · 三态勾选防假完成',
+        role: '只放当前正在攻关的里程碑任务，切成单轮 2–5 分钟能闭环验证的小步子。',
+        redline: '严格区分三种状态：[ ] 待办、[~] 离线/局部候选待验、[x] 已在默认正式入口端到端实测通过（彻底消灭提前乱打勾）。',
+        example: `| 任务 ID | 状态 | 微任务动作（ASD-STE 主动句） | 验收标准（DoD） |\n|---|---|---|---|\n| T1.1 | [x] | 实现哈希索引幂等合并函数 | pytest tests/test_merge.py 退出码 0 |\n| T1.2 | [~] | 接入主界面筛选全选与全清联动 | 待浏览器正式入口实测核对 |`
+      },
+      BACKLOG: {
+        name: 'docs/tracking/BACKLOG.md · 暂缓需求池与历史变更台账',
+        badge: '必选 · 防主线跑偏 + 承接历史',
+        role: '一举两得：上半区把“以后再做的支线好点子”收起来不干扰主线；下半区倒序记录每次修完的 Bug 和迭代回执，帮 STATUS.md 瘦身。',
+        redline: '躺在 BACKLOG 上半区的暂缓需求，未经你明确下令提拔进 TODO.md，AI 严禁擅自动工。',
+        example: `## 一、暂缓需求池\n| P-01 | 导出多主题自定义配色模板 | 等核心主线 M1 验收通过后再开启 |\n\n## 三、历史执行与修复账本\n| L-003 | 2026-11-18 | 修复 | 修正汇总函数漏保留两位小数导致差 0.21 的问题 |`
+      },
+      FORMULA: {
+        name: 'docs/tracking/FORMULA.md · 计算公式与算法口径铁契',
+        badge: '凡涉计算强制必开',
+        role: '专门锁死金额、比率、统计指标、权重、几何物理换算的“铁账本”。每条公式必须填满 7 要素 + 总额守恒等式 + 3 组手算黄金样例。',
+        redline: '未在本文件写明并获你确认前，严禁动任何计算代码；严禁把过滤条件不同的分子池与分母池直接相除！',
+        example: `### [F-01] 成交加权均价 (weighted_unit_price)\n- 精确公式：round_half_up(SUM(revenue_cents) / SUM(units), 2)\n- 同源过滤池：分子与分母必须同取 status == 'confirmed' 的同一批记录\n- 分母为 0 或 NULL 时：必须返回 NULL（界面显示 —），禁止返回 0`
+      },
+      DECISIONS: {
+        name: 'docs/tracking/DECISIONS.md · 项目决策记录',
+        badge: '多对话项目启用',
+        role: '记录用户已批准的决定、取代关系及受影响任务。收到拍板的对话当轮同步相关文档。',
+        redline: '后续无论重跑多少次导入、重构多少轮代码、换多少个新窗口，未经你书面推翻，AI 绝不准覆盖这里的决定。',
+        example: `| D-001 | 生效中 | 人工修正表中的确认值优先级高于自动规则；重算时必须跳过已锁定主键 |`
+      }
+    };
+
+    const docBtns = document.querySelectorAll('.tree-btn');
+    const docDetail = document.getElementById('doc-detail');
+    function renderDoc(key) {
+      const d = docsData[key];
+      docDetail.innerHTML = `
+        <div class="row-between" style="padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:12px;">
+          <h3>${d.name}</h3>
+          <span class="badge">${d.badge}</span>
+        </div>
+        <p><strong>唯一权责：</strong><span class="muted">${d.role}</span></p>
+        <div class="subcard" style="margin:12px 0;font-size:13px;"><strong>防翻车红线：</strong>${d.redline}</div>
+        <div style="font-weight:700;font-size:13px;margin-bottom:6px;">标准片段示范：</div>
+        <pre>${d.example}</pre>
+      `;
+    }
+    docBtns.forEach(b => {
+      b.addEventListener('click', () => {
+        docBtns.forEach(x => x.classList.toggle('active', x === b));
+        renderDoc(b.dataset.doc);
+      });
+    });
+    renderDoc('AGENTS');
+
+    const simChks = document.querySelectorAll('.sim-chk');
+    const simTerminal = document.getElementById('sim-terminal');
+    const simBadge = document.getElementById('sim-badge');
+    const simClearBtn = document.getElementById('sim-clear-btn');
+    const errMap = {
+      unsynced: `[追踪文档未同步拦截] 本次提交修改了项目实现文件 (src/app.js)，但未同步更新并暂存 docs/tracking/STATUS.md！\n     -> 请先同步刷新 docs/tracking/STATUS.md（含断点接力锚点）、TODO.md 及相关 SPEC/FORMULA 文档。`,
+      extradb: `[多余数据库拦截] 发现未在 AGENTS.md 'allowed_storage_paths' 白名单登记的数据库: data/test_copy.duckdb。\n     -> 严禁擅自新建或复制额外数据库；测试请用只读模式或微型夹具，收尾请清理临时库。`,
+      branch: `[残留分支拦截] 当前处于主分支 'main'，但仓库仍残留未收口的分支: exp/try-algo。\n     -> 必须先合并删除（git merge --no-ff exp/try-algo && git branch -d exp/try-algo）或放弃删除（git branch -D exp/try-algo）。`,
+      bloat: `[STATUS 膨胀拦截] docs/tracking/STATUS.md 当前共 135 行，超过 100 行上限！\n     -> 请只保留最新焦点与断点接力锚点，将历史记录移入 BACKLOG.md。`,
+      dated: `[日期副本拦截] 追踪文档严禁在文件名中带日期后缀分裂副本: docs/tracking/STATUS-2026-11-18.md。\n     -> 请合并回固定无日期标准文档（由 Git 记录历史）。`
+    };
+    function updateSim() {
+      const active = Array.from(simChks).filter(c => c.checked).map(c => c.value);
+      if (active.length === 0) {
+        simBadge.textContent = '退出码 0 · 绿灯放行';
+        simBadge.className = 'badge ok';
+        simTerminal.textContent = `$ git commit -m "feat: update calculation module"\n\n✅ [Project Guardian 安检绿灯通过] 根目录: /path/to/your-project\n  - 单主线检查: 唯一主分支 main 干净（残留分支: 0）\n  - 存储防膨胀检查: 零未授权数据库与冗余副本\n  - 追踪文档检查: docs/tracking/STATUS.md 已同步（42 / 100 行），断点接力锚点完整\n\n[main 8f31c2a] feat: update calculation module\n 3 files changed, 28 insertions(+), 4 deletions(-)`;
+      } else {
+        simBadge.textContent = `退出码 1 · 红灯拦截（共 ${active.length} 项违规）`;
+        simBadge.className = 'badge danger';
+        const lines = active.map((k, idx) => `  ${idx + 1}. ${errMap[k]}`).join('\n\n');
+        simTerminal.textContent = `$ git commit -m "feat: quick edit"\n\n🛑 [Project Guardian 安检红灯拦截] 共发现 ${active.length} 项违规：\n\n${lines}\n\n💡 提交已被物理阻断！AI 必须先修复上述全部违规项再重新提交（AGENTS.md 严禁使用 --no-verify 绕过）。`;
+      }
+    }
+    simChks.forEach(c => c.addEventListener('change', updateSim));
+    simClearBtn.addEventListener('click', () => {
+      simChks.forEach(c => { c.checked = false; });
+      updateSim();
+    });
+    updateSim();
+  </script>
+</body>
+</html>
