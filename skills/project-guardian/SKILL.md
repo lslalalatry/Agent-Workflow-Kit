@@ -1,12 +1,13 @@
 ---
 name: project-guardian
 description: >-
-  Enforces end-to-end project consistency, ASD-STE tracking documents (SPEC, FORMULA, STATUS, TODO, BACKLOG, DECISIONS), dual red-team specification audits, single-trunk Git discipline, and zero-sprawl storage guardrails across any project. Use when bootstrapping a project, drafting or auditing specifications and formulas, decomposing tasks, resuming tasks, syncing user decisions across chats, reviewing staged changes before commit or push, coordinating Git handoffs, or verifying completion gates.
+  仅当用户明确点名 project-guardian、要求初始化项目治理或执行双盲红队审查时使用；普通代码修改、技能优化或日常问答禁止主动调用。
+  Explicit-invocation project governance workflow (ASD-STE tracking docs, dual red-team specification audit, single-trunk Git & storage guardrails). Use ONLY for explicit project-guardian, governance initialization, or dual red-team audit requests; NEVER invoke proactively on ordinary coding, skill optimization, debugging, or Q&A.
 ---
 
 # Project Guardian — 通用项目一致性与追踪文档工作流
 
-本 Skill 为任意类型的软件、数据、AI 管线或混合工程项目提供统一的生命周期管控。日常简单问答或单行明确修复无需启动完整仪式；当进入**新项目立项、新阶段开启、核心逻辑/公式变更、跨窗口长任务接力或阶段收尾验收**时，按下方阶段按需读取对应手册执行。
+本 Skill 为软件、数据、AI 管线或混合工程项目提供按需启用的生命周期管控。**仅当用户明确点名 `project-guardian`、要求初始化项目治理或当轮明确要求执行双盲红队审查时使用（或当前仓库 `AGENTS.md` 明确要求运行对应门禁脚本时按需调用）；普通代码修改、技能优化、范围明确的常规功能迭代或日常问答禁止主动启动立项访谈与红队辩论仪式。**
 
 ---
 
@@ -36,8 +37,8 @@ description: >-
 
 | 所处生命周期阶段 | 必读参考手册 | 阶段产出与通关条件 |
 | :--- | :--- | :--- |
-| **Phase 1 · 需求挖掘与公式锁死** | [01-discovery-and-formula.md](./references/01-discovery-and-formula.md) | 先盘点现有能力并调研高星且近期实质更新的 GitHub 项目（ECC search-first），带着取舍逐题单问；技术权衡必须用**生活化比喻**解释；生成 `SPEC.md` 初稿，含计算项目强制同步生成 `FORMULA.md`（7 要素 + 3 组手算样例） |
-| **Phase 2 · 双盲红队对抗挑刺** | [02-dual-redteam-audit.md](./references/02-dual-redteam-audit.md) | 派发 2 个零历史妥协上下文的独立审查子任务（逻辑公式审计 + 极简边界守门），合并真漏洞交用户拍板后锁定说明书 |
+| **Phase 1 · 需求挖掘与公式锁死** | [01-discovery-and-formula.md](./references/01-discovery-and-formula.md) | **仅新项目立项或边界未定的跨模块大改执行**（常规明确功能跳过本步直达 Phase 4）：先盘点现有能力并调研高星且近期实质更新的 GitHub 项目，带着取舍逐题单问；技术权衡必须用**生活化比喻**解释；生成 `SPEC.md` 初稿，含计算项目同步生成 `FORMULA.md` |
+| **Phase 2 · 双盲红队对抗挑刺（仅点名触发）** | [02-dual-redteam-audit.md](./references/02-dual-redteam-audit.md) | **默认关闭（连新项目立项也不自动运行）**。仅当用户当轮明确开口要求红队、辩论或挑刺时，派发 2 个零历史上下文的独立审查子任务，合并真漏洞交用户拍板 |
 | **Phase 3 · 追踪文档拆解与受控写作** | [03-bilingual-ste-rules.md](./references/03-bilingual-ste-rules.md) | 用中英双语 ASD-STE 法则生成/更新 `STATUS.md`（`<=100` 行）、`TODO.md`（2–5 分钟微任务，`[ ]/[~]/[x]` 三态）与 `BACKLOG.md` |
 | **Phase 4 & 5 · 微步执行、隔离与收口** | [04-isolation-and-continuity.md](./references/04-isolation-and-continuity.md) | 单主线 `main`（`exp/*` 当轮必收口）、数据库/大资产零全量克隆、每步刷新 `STATUS.md` 断点接力锚点、通过 `verify_guardrails.py` 闸机提交 |
 
