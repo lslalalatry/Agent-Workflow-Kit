@@ -50,7 +50,7 @@
 
 > 调用 `project-guardian` 初始化当前项目。我想做【用一句话描述想法】。先看已有项目里有什么可借鉴，再一次问我一个关键问题，和我确定需求及验收方式。
 
-涉及金额、统计或评分时，补一句 **“开启公式文档，用正常值、边界值和一个易算错的例子核对公式。”** 准备用多个对话协作时，补一句 **“开启决策记录。”** 默认不自动跑双盲红队辩论；如果复杂规格写完后你想做一次专家找茬，再单独说一句 **“按 `project-guardian` 对当前规格跑一次双盲红队挑刺”** 即可。
+涉及金额、统计或评分时，补一句 **“开启公式文档，用正常值、边界值和一个易算错的例子核对公式。”** 准备用多个对话协作时，补一句 **“开启决策记录。”** 如果是中大型系统、需要完整技术架构（盘点已有数据库与集中存储设计、图片对象存储、权限模型、UI 五态清单、部署与草稿缓冲区），再补一句 **“开启完整架构蓝图（`--with-architecture`）。”** 默认不自动跑双盲红队辩论；如果复杂规格写完后你想做一次专家找茬，再单独说一句 **“按 `project-guardian` 对当前规格跑一次双盲红队挑刺”** 即可。
 
 #### 已有项目首次接入
 
@@ -119,13 +119,25 @@ Agent-Workflow-Kit/
 │   └── COLLABORATION_PRINCIPLES.md        # 13 条全局通用《Agent 协作与比喻沟通原则》
 ├── project-template/                      # 可随时手动复制到任意新项目的空白模板包
 │   ├── AGENTS.md                          # 通用项目宪章母版（在项目配置卡登记实际入口、存储和验证命令）
-│   └── docs/tracking/                     # 标准追踪文档空白模板套组
-│       ├── SPEC.md
-│       ├── STATUS.md
-│       ├── TODO.md
-│       ├── BACKLOG.md
-│       ├── FORMULA.md
-│       └── DECISIONS.md
+│   ├── deploy/                            # 可选部署与运维骨架（--with-architecture 启用）
+│   └── docs/
+│       ├── tracking/                      # 标准追踪文档空白模板套组
+│       │   ├── SPEC.md
+│       │   ├── STATUS.md
+│       │   ├── TODO.md
+│       │   ├── BACKLOG.md
+│       │   ├── FORMULA.md
+│       │   └── DECISIONS.md
+│       └── architecture/                  # 可选分域架构知识库模板（--with-architecture 启用，兼容 Obsidian）
+│           ├── README.md
+│           ├── DRAFT.md                   # 未拍板方案与调研草稿缓冲区
+│           ├── ARCHITECTURE.md            # 存量盘点、系统拓扑、集中存储与图片/媒体存储
+│           ├── DATA_MODEL.md              # Schema 规划、幂等键、状态机与迁移契约
+│           ├── SECURITY_AND_AUTH.md       # 权限模型（RBAC）与凭据安全边界
+│           ├── API_AND_UI_STATES.md       # 接口规范与列表/界面多态接入清单
+│           ├── DEPLOYMENT_AND_QA.md       # 环境矩阵、备份还原与一键回滚
+│           ├── images/                    # 纯文档架构配图占位
+│           └── modules/                   # 复杂项目子模块专项说明书槽位
 ├── skills/
 │   └── project-guardian/                  # 全局主控 Skill（可安装到 Antigravity 与 Codex）
 │       ├── SKILL.md                       # 阶段路由入口

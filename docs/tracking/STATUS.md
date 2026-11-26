@@ -20,4 +20,6 @@ D-003 已落地：双盲红队挑刺改为纯手动点名触发，常规功能�
 
 D-004 已落地：新增双轨理论白皮书 docs/THEORETICAL_FOUNDATIONS.md 并在 README.md 接入导读入口，常驻规则保持零膨胀，脱敏核查、安检闸机与 11 项回归测试全部通过。
 
+D-005 已落地：新增通用架构蓝图手册 01a-architecture-blueprint.md、模块化 docs/architecture/ 与 deploy/ 模板及 --with-architecture 初始化选项，双端全局已同步，等待 commit 与 GitHub 推送确认。
+
 下轮修改先看本轮提交及工作区差异。运行 python3 -B -m unittest discover -s tests -v 核对提交和推送行为。

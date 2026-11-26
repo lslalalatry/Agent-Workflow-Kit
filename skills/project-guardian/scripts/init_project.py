@@ -226,10 +226,47 @@ def verify_initial_state(target: Path, status_file: Path, setup_errors: List[str
     return not errors
 
 
+def copy_architecture_bundle(tpl_root: Path, target: Path, logs: List[str]) -> None:
+    arch_src = tpl_root / "docs" / "architecture"
+    arch_dst = target / "docs" / "architecture"
+    if arch_src.is_dir():
+        created_arch: List[str] = []
+        skipped_arch: List[str] = []
+        for src in sorted(arch_src.rglob("*")):
+            if not src.is_file():
+                continue
+            rel = src.relative_to(arch_src)
+            dst = arch_dst / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            if dst.exists():
+                skipped_arch.append(rel.as_posix())
+                continue
+            dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+            created_arch.append(rel.as_posix())
+        if created_arch:
+            logs.append(f"已创建架构设计蓝图 (docs/architecture/): {', '.join(created_arch)}")
+        if skipped_arch:
+            logs.append(f"保留已有架构文档（未覆盖）: {', '.join(skipped_arch)}")
+
+    deploy_src = tpl_root / "deploy"
+    deploy_dst = target / "deploy"
+    if deploy_src.is_dir():
+        for src in sorted(deploy_src.rglob("*")):
+            if not src.is_file():
+                continue
+            rel = src.relative_to(deploy_src)
+            dst = deploy_dst / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            if not dst.exists():
+                dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+                logs.append(f"已创建部署目录骨架 (deploy/{rel.as_posix()})")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Initialize Project Guardian templates and gatekeeper.")
     parser.add_argument("target", nargs="?", default=".", help="Target project directory.")
     parser.add_argument("--minimal", action="store_true", help="Create only the 4 core tracking docs.")
+    parser.add_argument("--with-architecture", action="store_true", help="Enable and create modular docs/architecture/ blueprint and deploy/ skeleton.")
     parser.add_argument("--with-formula", action="store_true", help="Enable and create FORMULA.md.")
     parser.add_argument("--with-decisions", action="store_true", help="Enable and create DECISIONS.md.")
     parser.add_argument("--no-hook", action="store_true", help="Skip installing Git pre-commit and pre-push hooks.")
@@ -252,6 +289,8 @@ def main() -> int:
     if not agents_dst.exists():
         agents_text = (tpl_root / "AGENTS.md").read_text(encoding="utf-8")
         agents_text = agents_text.replace('project_name: "<填写项目名称>"', f'project_name: "{target.name}"')
+        if args.with_architecture:
+            agents_text = agents_text.replace("enable_architecture_doc: false", "enable_architecture_doc: true")
         if args.with_formula:
             agents_text = agents_text.replace("enable_formula_doc: false", "enable_formula_doc: true")
         if args.with_decisions:
@@ -261,7 +300,8 @@ def main() -> int:
     else:
         logs.append("沿用已有 AGENTS.md，按所选选项补齐文档开关")
 
-    requested_flags = [name for name, enabled in (("enable_formula_doc", args.with_formula),
+    requested_flags = [name for name, enabled in (("enable_architecture_doc", args.with_architecture),
+                                                   ("enable_formula_doc", args.with_formula),
                                                    ("enable_decisions_doc", args.with_decisions)) if enabled]
     if requested_flags:
         enable_profile_documents(agents_dst, requested_flags)
@@ -294,6 +334,9 @@ def main() -> int:
         logs.append(f"已创建追踪文档 (docs/tracking/): {', '.join(created_docs)}")
     if skipped_docs:
         logs.append(f"保留已有追踪文档（未覆盖）: {', '.join(skipped_docs)}")
+
+    if profile.get("enable_architecture_doc"):
+        copy_architecture_bundle(tpl_root, target, logs)
 
     setup_errors = []
     if not args.no_hook:

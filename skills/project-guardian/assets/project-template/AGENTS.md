@@ -39,6 +39,7 @@
 | `docs/tracking/BACKLOG.md` | **必选** | **暂缓需求池 + 倒序变更账本**：上半区存放暂不进主线的远期想法（防范围蔓延）；下半区倒序归档已完成迭代与缺陷修复记录 |
 | `docs/tracking/FORMULA.md` | **涉算必选** | **计算与算法契约**：唯一英文 ID、公式表达式、分子分母同源池、舍入精度、守恒断言等式、至少 3 组手算黄金样例（正常/零或空边界/反例） |
 | `docs/tracking/DECISIONS.md` | **多对话项目启用** | **决策记录**：登记用户拍板、取代关系和受影响条目，防止后续重跑或换窗口时翻案 |
+| `docs/architecture/` | **中大型项目按需启用** | **分域架构知识库**（`--with-architecture` 开启）：`DRAFT.md` 草稿区、`ARCHITECTURE.md`（存量盘点/集中存储/媒体存储）、`DATA_MODEL.md`、`SECURITY_AND_AUTH.md`、`API_AND_UI_STATES.md`、`DEPLOYMENT_AND_QA.md` |
 
 ---
 
@@ -58,7 +59,7 @@
 
 ## 5. 按需分流工作流（关联 `project-guardian` Skill）
 
-1. **阶段 1 · 立项访谈与契约起草**（仅新项目立项或未知边界大改时执行，明确功能修改直接跳至阶段 4）：读取 `project-guardian` 的 `references/01-discovery-and-formula.md`，先按用户初步需求检查现有能力与高星且近期实质更新的 GitHub 项目，再用生活化比喻逐题对齐未知边界，生成初版 `SPEC.md`（涉计算同步生成 `FORMULA.md`）。
+1. **阶段 1 · 立项访谈与契约起草**（仅新项目立项或未知边界大改时执行，明确功能修改直接跳至阶段 4）：读取 `project-guardian` 的 `references/01-discovery-and-formula.md`（搭建完整系统时同步读取 `references/01a-architecture-blueprint.md`），先盘点现有能力与已有数据库/服务并调研高星且近期实质更新的 GitHub 项目，再用生活化比喻逐题对齐未知边界，生成初版 `SPEC.md`（按需生成 `docs/architecture/` 与 `FORMULA.md`）。
 2. **阶段 2 · 双盲红队平行挑刺（默认跳过，仅点名触发）**：新项目立项与日常迭代均禁止自动执行。仅当用户当轮明确要求红队、辩论或挑刺审查时，才读取 `references/02-dual-redteam-audit.md`，派发 2 个零上下文独立审查子任务，去重合并真问题请用户拍板锁版。
 3. **阶段 3 · 追踪文档拆解**（立项或复杂里程碑拆解时执行）：读取 `references/03-bilingual-ste-rules.md`，按 ASD-STE 法则刷新 `STATUS.md`、`TODO.md`（拆为原子微任务）与 `BACKLOG.md`。
 4. **阶段 4 · 微步开发与实时锚点**：
@@ -80,6 +81,7 @@ project_name: "<填写项目名称>"
 one_line_goal: "<一句话说明项目解决的核心问题>"
 primary_branch: "main"
 tracking_dir: "docs/tracking"
+enable_architecture_doc: false   # 需要完整系统架构蓝图（集中数据库/图片存储/权限/多态/部署）时设为 true
 enable_formula_doc: false        # 含数值/统计/权重/物理几何计算时必须设为 true
 enable_decisions_doc: false      # 多对话项目或需记录拍板时设为 true
 mainline_entrypoints:            # 存量项目必填既有主入口，防止另起炉灶

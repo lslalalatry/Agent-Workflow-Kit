@@ -235,6 +235,41 @@ class AcceptanceTests(unittest.TestCase):
         self.assertEqual(db.read_bytes(), original)
         self.assertIn("尚未", (self.docs / "TODO.md").read_text())
 
+    def test_architecture_flag_scaffolds_blueprint_and_protects_existing_files(self):
+        self.init("--with-architecture")
+        profile = (self.root / "AGENTS.md").read_text()
+        self.assertIn("enable_architecture_doc: true", profile)
+        arch_dir = self.root / "docs/architecture"
+        for name in (
+            "README.md",
+            "DRAFT.md",
+            "ARCHITECTURE.md",
+            "DATA_MODEL.md",
+            "SECURITY_AND_AUTH.md",
+            "API_AND_UI_STATES.md",
+            "DEPLOYMENT_AND_QA.md",
+        ):
+            self.assertTrue((arch_dir / name).is_file(), f"missing {name}")
+        self.assertTrue((self.root / "deploy/README.md").is_file())
+        self.call("git", "add", ".")
+        self.commit("initialize with architecture blueprint")
+
+        # Pure architecture doc edits should not require touching STATUS.md, and re-init keeps edits.
+        arch_doc = arch_dir / "ARCHITECTURE.md"
+        arch_doc.write_text(arch_doc.read_text() + "\n## 补充架构笔记\n复用既有 PG。\n")
+        self.init("--with-architecture")
+        self.assertIn("复用既有 PG", arch_doc.read_text())
+        self.call("git", "add", "docs/architecture/ARCHITECTURE.md")
+        self.commit("update architecture doc only")
+
+        # Unwhitelisted databases inside docs/architecture must still be blocked by guardrails.
+        rogue_db = arch_dir / "shadow.sqlite3"
+        with sqlite3.connect(rogue_db) as conn:
+            conn.execute("create table t(id integer)")
+        self.assertIn("shadow.sqlite3", self.call(
+            sys.executable, str(SCRIPTS / "verify_guardrails.py"), "--root", ".", ok=False
+        ))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

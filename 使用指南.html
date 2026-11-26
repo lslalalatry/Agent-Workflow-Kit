@@ -200,6 +200,10 @@
         <div id="addon-options" class="divider">
           <div style="font-weight:600;font-size:13px;margin-bottom:6px;">按项目特征勾选附加契约</div>
           <label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer;margin-bottom:6px;">
+            <input type="checkbox" id="opt-arch" checked />
+            <span>需要完整系统架构蓝图（含已有数据库盘点、集中存储、图片对象存储、权限、UI 多态与部署 <code>docs/architecture/</code>）</span>
+          </label>
+          <label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer;margin-bottom:6px;">
             <input type="checkbox" id="opt-formula" checked />
             <span>含算钱 / 统计指标 / 权重 / 几何换算（强制开启 <code>FORMULA.md</code>）</span>
           </label>
@@ -366,6 +370,7 @@
       });
     });
 
+    const optArch = document.getElementById('opt-arch');
     const optFormula = document.getElementById('opt-formula');
     const optDecisions = document.getElementById('opt-decisions');
     const userGoal = document.getElementById('user-goal');
@@ -377,6 +382,7 @@
 
     function updateLauncher() {
       const scene = document.querySelector('input[name="scene"]:checked').value;
+      const hasArch = optArch.checked;
       const hasFormula = optFormula.checked;
       const hasDecisions = optDecisions.checked;
       const goal = userGoal.value.trim();
@@ -386,22 +392,24 @@
       goalWrap.classList.toggle('hidden', !isSetup);
 
       const extras = [];
+      if (hasArch) extras.push('开启 docs/architecture/ 完整架构蓝图');
       if (hasFormula) extras.push('开启 FORMULA.md 计算公式契约');
       if (hasDecisions) extras.push('开启 DECISIONS.md 关键决策账本');
       const extraText = extras.length ? `（同时${extras.join('，')}）` : '（采用核心四件套精简模式）';
 
       const flags = [];
+      if (hasArch) flags.push('--with-architecture');
       if (hasFormula) flags.push('--with-formula');
       if (hasDecisions) flags.push('--with-decisions');
       if (!flags.length) flags.push('--minimal');
 
       let prompt = '', cli = '', steps = [];
       if (scene === 'new') {
-        prompt = `调用 project-guardian 初始化当前新项目${extraText}，装好单主线 Git 与自动安检闸机；然后用生活化比喻，每次问我 1 个关键问题，跟我对齐需求。\n\n我想做的项目是：${goal || '【在这里用大白话填写你的想法】'}`;
+        prompt = `调用 project-guardian 初始化当前新项目${extraText}，装好单主线 Git 与自动安检闸机；然后用生活化比喻，每次问我 1 个关键问题，跟我对齐需求${hasArch ? '与完整技术架构（先盘点是否已有可复用数据库，再设计集中存储、图片/媒体存储、权限、UI 多态与部署回滚）' : ''}。\n\n我想做的项目是：${goal || '【在这里用大白话填写你的想法】'}`;
         cli = `python3 ~/Documents/Agent-Workflow-Kit/skills/project-guardian/scripts/init_project.py . ${flags.join(' ')}`;
         steps = [
-          '自动生成根目录 AGENTS.md、docs/tracking/ 追踪文档夹，并将初始化实测结果写回 STATUS.md；',
-          '先调研高星且近期有实质更新的 GitHub 项目，再逐题对齐取舍，起草 SPEC.md' + (hasFormula ? ' 与 FORMULA.md 七要素公式表（含 3 组手算黄金样例）' : '') + '；',
+          '自动生成根目录 AGENTS.md、docs/tracking/ 追踪文档夹' + (hasArch ? '、docs/architecture/ 分域架构模板及 deploy/ 骨架' : '') + '，并将初始化实测结果写回 STATUS.md；',
+          (hasArch ? '先盘点已有数据库/基础设施，按集中存储、图片对象存储、权限模型、UI 多态与部署回滚对齐八大架构支柱，未定稿写入 DRAFT.md；' : '先调研高星且近期有实质更新的 GitHub 项目，再逐题对齐取舍，起草 SPEC.md') + (hasFormula ? ' 并补充 FORMULA.md 七要素公式表（含 3 组手算黄金样例）' : '') + '；',
           '默认不自动跑双盲红队辩论（日常简单功能直接快改快验）；如需写代码前做一次专家找茬，随时切换至「单独跑双盲红队挑刺」场景点名调用；',
           '按 ASD-STE 简明法则把任务拆进 TODO.md，从默认入口实测交付结果，核对公式手算样例后勾选完成。'
         ];
@@ -442,6 +450,7 @@
       happensList.innerHTML = steps.map(s => `<li>${s}</li>`).join('');
     }
     document.querySelectorAll('input[name="scene"]').forEach(r => r.addEventListener('change', updateLauncher));
+    optArch.addEventListener('change', updateLauncher);
     optFormula.addEventListener('change', updateLauncher);
     optDecisions.addEventListener('change', updateLauncher);
     userGoal.addEventListener('input', updateLauncher);

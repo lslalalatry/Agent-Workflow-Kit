@@ -19,9 +19,10 @@ description: >-
 
 1. **一键初始化项目骨架与自动安检闸机**：
    ```bash
-   python3 "<本Skill目录>/scripts/init_project.py" "<目标项目根目录>" [--minimal | --with-formula] [--with-decisions]
+   python3 "<本Skill目录>/scripts/init_project.py" "<目标项目根目录>" [--minimal | --with-architecture] [--with-formula] [--with-decisions]
    ```
    - 自动创建或补齐根目录 `AGENTS.md` 与 `docs/tracking/` 追踪文档（默认绝不覆盖已有文件）；
+   - 启用 `--with-architecture` 时额外创建分域架构知识库 `docs/architecture/`（含 `DRAFT.md`、技术架构/集中存储与图片存储、数据模型、权限模型、API/UI 五态清单、部署 QA）与 `deploy/` 部署骨架；
    - 若尚未初始化 Git，自动初始化单主线 `main`；
    - 安装 Git 提交与推送检查，实际检查初始状态，将通过或失败原因写回 STATUS.md。
 
@@ -38,6 +39,7 @@ description: >-
 | 所处生命周期阶段 | 必读参考手册 | 阶段产出与通关条件 |
 | :--- | :--- | :--- |
 | **Phase 1 · 需求挖掘与公式锁死** | [01-discovery-and-formula.md](./references/01-discovery-and-formula.md) | **仅新项目立项或边界未定的跨模块大改执行**（常规明确功能跳过本步直达 Phase 4）：先盘点现有能力并调研高星且近期实质更新的 GitHub 项目，带着取舍逐题单问；技术权衡必须用**生活化比喻**解释；生成 `SPEC.md` 初稿，含计算项目同步生成 `FORMULA.md` |
+| **Phase 1A · 通用架构蓝图（按需）** | [01a-architecture-blueprint.md](./references/01a-architecture-blueprint.md) | 搭建完整系统或重构基础设施时执行：先盘点已有数据库/服务，统一规划**集中存储（单库多 Schema + 读写分离）、图片/媒体存储（对象存储 + SHA-256 元数据 + 外链隔离）、权限模型、UI 五态清单、草稿区与 QA 部署回滚**，落盘至 `docs/architecture/` 与 `deploy/` |
 | **Phase 2 · 双盲红队对抗挑刺（仅点名触发）** | [02-dual-redteam-audit.md](./references/02-dual-redteam-audit.md) | **默认关闭（连新项目立项也不自动运行）**。仅当用户当轮明确开口要求红队、辩论或挑刺时，派发 2 个零历史上下文的独立审查子任务，合并真漏洞交用户拍板 |
 | **Phase 3 · 追踪文档拆解与受控写作** | [03-bilingual-ste-rules.md](./references/03-bilingual-ste-rules.md) | 用中英双语 ASD-STE 法则生成/更新 `STATUS.md`（`<=100` 行）、`TODO.md`（2–5 分钟微任务，`[ ]/[~]/[x]` 三态）与 `BACKLOG.md` |
 | **Phase 4 & 5 · 微步执行、隔离与收口** | [04-isolation-and-continuity.md](./references/04-isolation-and-continuity.md) | 单主线 `main`（`exp/*` 当轮必收口）、数据库/大资产零全量克隆、每步刷新 `STATUS.md` 断点接力锚点、通过 `verify_guardrails.py` 闸机提交 |

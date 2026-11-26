@@ -74,6 +74,7 @@ def parse_agents_profile(agents_path: Path, text=None) -> Dict[str, object]:
     profile: Dict[str, object] = {
         "primary_branch": "main",
         "tracking_dir": "docs/tracking",
+        "enable_architecture_doc": False,
         "enable_formula_doc": False,
         "enable_decisions_doc": False,
         "allowed_storage_paths": [],
@@ -107,6 +108,8 @@ def parse_agents_profile(agents_path: Path, text=None) -> Dict[str, object]:
             profile["primary_branch"] = val
         elif key == "tracking_dir" and val and not val.startswith("<"):
             profile["tracking_dir"] = val.strip("/")
+        elif key == "enable_architecture_doc":
+            profile["enable_architecture_doc"] = val.lower() in {"true", "yes", "1", "是"}
         elif key == "enable_formula_doc":
             profile["enable_formula_doc"] = val.lower() in {"true", "yes", "1", "是"}
         elif key == "enable_decisions_doc":
@@ -318,6 +321,14 @@ def check_tracking_docs(
             shown = doc_name if rel_tdir == "." else f"{rel_tdir}/{doc_name}"
             errors.append(f"[追踪文档缺失] 缺少必选追踪文档: {shown}。")
 
+    if profile.get("enable_architecture_doc"):
+        for arch_doc in ("docs/architecture/ARCHITECTURE.md", "docs/architecture/DATA_MODEL.md"):
+            exists = (root / arch_doc).is_file()
+            if hook_mode == "pre-commit":
+                exists = bool(acceptance.git(root, "ls-files", "--stage", "--", arch_doc))
+            if not exists:
+                errors.append(f"[架构文档缺失] 已启用 enable_architecture_doc，缺少必选架构文档: {arch_doc}。")
+
     if tdir.is_dir() and tdir != root:
         for child in sorted(tdir.iterdir()):
             if child.is_file() and child.suffix.lower() == ".md":
@@ -360,6 +371,8 @@ def check_tracking_docs(
         if path_str in meta_exact:
             return True
         if rel_tdir != "." and path_str.startswith(rel_tdir + "/"):
+            return True
+        if path_str.startswith("docs/architecture/") and path_str.endswith(".md"):
             return True
         if rel_tdir == "." and path_str in {
             "SPEC.md",

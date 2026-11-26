@@ -23,3 +23,7 @@ D-003 要求默认关闭双盲红队平行挑刺。新项目首次立项与日�
 ## 跨学科理论白皮书与常驻规则分离
 
 D-004 新增独立离线文档 `docs/THEORETICAL_FOUNDATIONS.md`，以「学术理论原名与出处 + 生活化直白解释」双轨结构沉淀脱敏双领域实证样本、七大跨学科理论与工程机制映射表。`README.md` 提供导读链接，常驻 `AGENTS.md` 与 `SKILL.md` 不混入理论长文。
+
+## 通用分域架构蓝图（`--with-architecture`）
+
+D-005 要求 `init_project.py` 支持 `--with-architecture`（对应 `AGENTS.md` 中 `enable_architecture_doc: true`），非覆盖式生成 `docs/architecture/` 分域模板（`README`、`DRAFT`、`ARCHITECTURE`、`DATA_MODEL`、`SECURITY_AND_AUTH`、`API_AND_UI_STATES`、`DEPLOYMENT_AND_QA`、`images/`、`modules/`）与 `deploy/README.md`。`01a-architecture-blueprint.md` 指导 AI 开局先盘点已有数据库与云基础设施，再对齐集中存储、图片对象存储、权限、UI 多态与回滚。`verify_guardrails.py` 在启用 `enable_architecture_doc` 时核查核心架构文档存在，免除纯文档变更对 `STATUS.md` 的强制绑定，同时继续拦截目录内未登记数据库与超大文件。
