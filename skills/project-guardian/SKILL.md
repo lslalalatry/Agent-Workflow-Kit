@@ -1,13 +1,13 @@
 ---
 name: project-guardian
 description: >-
-  仅当用户明确点名 project-guardian、要求初始化项目治理或执行双盲红队审查时使用；普通代码修改、技能优化或日常问答禁止主动调用。
-  Explicit-invocation project governance workflow (ASD-STE tracking docs, dual red-team specification audit, single-trunk Git & storage guardrails). Use ONLY for explicit project-guardian, governance initialization, or dual red-team audit requests; NEVER invoke proactively on ordinary coding, skill optimization, debugging, or Q&A.
+  仅当用户明确点名 project-guardian、要求初始化项目治理、执行双盲红队审查，或在已接入项目启动 /swarm 并行会话（及新项目 /swarm 选定中/深度任务）时使用；普通代码修改、轻度单次任务、技能优化或日常问答禁止主动调用。
+  Explicit-invocation project governance workflow (ASD-STE tracking docs, dual red-team specification audit, single-trunk Git & storage guardrails, and /swarm orchestration for governed or medium/deep tasks). Use ONLY when explicitly invoked, for dual red-team audits, or when /swarm runs in an already-governed repo (or medium/deep /swarm setup); NEVER invoke proactively on ordinary coding, light tasks, skill optimization, debugging, or Q&A.
 ---
 
 # Project Guardian — 通用项目一致性与追踪文档工作流
 
-本 Skill 为软件、数据、AI 管线或混合工程项目提供按需启用的生命周期管控。**仅当用户明确点名 `project-guardian`、要求初始化项目治理或当轮明确要求执行双盲红队审查时使用（或当前仓库 `AGENTS.md` 明确要求运行对应门禁脚本时按需调用）；普通代码修改、技能优化、范围明确的常规功能迭代或日常问答禁止主动启动立项访谈与红队辩论仪式。**
+本 Skill 为软件、数据、AI 管线或混合工程项目提供按需启用的生命周期管控。**仅当用户明确点名 `project-guardian`、要求初始化项目治理、明确要求双盲红队审查，或在已接入项目中启动 `/swarm`（以及在未接入项目中用户将 `/swarm` 标为中度/深度任务）时自动激活；普通代码修改、轻度任务、技能优化、范围明确的常规功能迭代或日常问答禁止主动启动立项访谈与红队辩论仪式。**
 
 ---
 
@@ -29,16 +29,17 @@ description: >-
 
 2. **手动运行自动安检闸机（收尾提交前必跑）**：
    ```bash
-   python3 "<本Skill目录>/scripts/verify_guardrails.py" --root "<目标项目根目录>"
+   python3 "<本Skill目录>/scripts/verify_guardrails.py" --root "<目标项目根目录>" [--swarm-active]
    ```
-   - 核查项：① 本地是否仅剩唯一主分支（无悬空 `exp/*` 残留分支）；② 是否存在未在 `AGENTS.md` 白名单登记的数据库或超大副本；③ 代码变更是否同步更新了 `STATUS.md`；④ `AGENTS.md <= 20KB` 且 `STATUS.md <= 100` 行，且无带日期后缀的重复追踪文档。
+   - 核查项：① 本地是否仅剩唯一主分支（无悬空 `exp/*` 残留分支；仅处于 `/swarm` 并行次级 worktree 的 `swarm/<worker>` 分支或传 `--swarm-active` 时允许过程态暂存，合回 `main` 收口时恢复零残留拦截）；② 是否存在未在 `AGENTS.md` 白名单登记的数据库或超大副本；③ 代码变更是否同步更新了 `STATUS.md`；④ `AGENTS.md <= 20KB` 且 `STATUS.md <= 100` 行，且无带日期后缀的重复追踪文档。
 
 3. **渐进式按需查询大型追踪/架构文档（多模块省上下文必用）**：
    ```bash
-   python3 "<本Skill目录>/scripts/query_docs.py" search --root "<目标项目根目录>" --query "<D-编号 / 术语 / 模块名>"
+   python3 "<本Skill目录>/scripts/query_docs.py" search --root "<目标项目根目录>" --query "<D-编号 / 术语 / 模块名>" [--any]
    python3 "<本Skill目录>/scripts/query_docs.py" read --root "<目标项目根目录>" --path "<相对路径>" --section "<段落或编号>"
+   python3 "<本Skill目录>/scripts/query_docs.py" modules --root "<目标项目根目录>"
    ```
-   - 先输出紧凑索引（`文件:行范围 | [编号] 标题`），再只读取命中章节（默认最多 80 行自动分段），禁止盲目整文件塞入上下文，并强制核对 `D-编号`/`F-编号` 原文而非凭记忆猜规则。
+   - 先输出紧凑索引（`文件:行范围 | [编号] 标题`）或模块卡状态总表（状态、已勾断言数与关联编号），再只读取命中章节（默认最多 80 行自动分段），禁止盲目整文件塞入上下文，并强制核对 `D-编号`/`F-编号` 原文而非凭记忆猜规则。
 
 ---
 
@@ -51,6 +52,7 @@ description: >-
 | **Phase 2 · 双盲红队对抗挑刺（仅点名触发）** | [02-dual-redteam-audit.md](./references/02-dual-redteam-audit.md) | **默认关闭（连新项目立项也不自动运行）**。仅当用户当轮明确开口要求红队、辩论或挑刺时，派发 2 个零历史上下文的独立审查子任务，合并真漏洞交用户拍板 |
 | **Phase 3 · 追踪文档拆解与受控写作** | [03-bilingual-ste-rules.md](./references/03-bilingual-ste-rules.md) | 用中英双语 ASD-STE 法则生成/更新 `STATUS.md`（`<=100` 行）、`TODO.md`（2–5 分钟微任务，`[ ]/[~]/[x]` 三态）与 `BACKLOG.md` |
 | **Phase 4 & 5 · 微步执行、隔离与收口** | [04-isolation-and-continuity.md](./references/04-isolation-and-continuity.md) | 单主线 `main`（`exp/*` 当轮必收口）、数据库/大资产零全量克隆、每步刷新 `STATUS.md` 断点接力锚点、通过 `verify_guardrails.py` 闸机提交 |
+| **Swarm 模式（仅用户开启 `/swarm` 时）** | [08-swarm-orchestration.md](./references/08-swarm-orchestration.md) | **默认不加载，严禁擅自开启 Swarm**：仅在 `/swarm` 会话中按需激活，规定 Coordinator 总账本单写者、Author `swarm/<worker>` 分片隔离、`swarm_pane` 对齐与合回唯一 `main` 收口 |
 
 ---
 

@@ -63,6 +63,7 @@ python3 "<技能目录>/scripts/chat_sync.py" apply --root "<项目根目录>" -
   3. **保数据**：区分“代码与定时停用”和“历史数据保留只读”（严禁因砍功能误删历史审计资产）；若仅本期暂缓，则整块移入 `BACKLOG.md` 上半区暂缓池。
   4. **验并推**：跑通剩余全量测试，审查提交并推送 `main` 后提示新开对话框。
 
-### 4. 多任务真并行防撞规则
+### 4. 多任务真并行防撞规则（含 `/swarm` 模式）
 - 两个对话窗口严禁同时修改同一个文件或同一张 `modules/*.md`。
-- 若必须并行开发不同子模块，各窗口必须使用独立的 `git worktree` 或 `exp/<module>` 隔离分支；**先完成者先 `fetch + rebase origin/<主分支>` 合回并推 `main`，并当场删除自己的临时分支/`worktree`**（严禁长期挂着不合入）。
+- 当用户主动开启 `/swarm` 进行多工匠并行开发时，严格执行 [08-swarm-orchestration.md](./08-swarm-orchestration.md)：由 **Coordinator 独占修改 `docs/tracking/` 总账本**，Author 通过 `workspace: "share"` 在各自 **`swarm/<worker>`** 分支独立开发并只更新对应 `modules/<module>.md`，合回主干且删光临时分支与 worktree 后再统一审查、验收并推送 `main`。
+- 非 `/swarm` 的普通并行场景必须使用独立 `git worktree` 或 `exp/<module>` 隔离分支；**先完成者先 `fetch + rebase origin/<主分支>` 合回并推 `main`，并当场删除自己的临时分支/`worktree`**（严禁长期挂着不合入）。

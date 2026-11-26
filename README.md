@@ -78,6 +78,15 @@
 
 > 重读当前工作区的决策、TODO、STATUS 和这项任务涉及的产品说明或公式，核对其他对话尚未提交的改动，从上次断点继续。
 
+#### 用 `/swarm` 多工匠并行开发
+
+当大项目拆成多个独立子模块（`docs/architecture/modules/*.md`）时，在聊天中直接以 `/swarm` 开场（AI 默认不会擅自开启 Swarm）：
+
+- **已接入过 `project-guardian` 的项目**：你只需直接输入 `/swarm <并行目标>`，Coordinator 会依据根目录 `AGENTS.md` 自动挂载 `08-swarm-orchestration.md` 协同规程。
+- **全新未接入的目录**：可在句首顺带加一个分级词让 AI 秒判：**`轻度任务`**（直接用 Swarm 跑完不建档案）、**`中度任务`**（自动开启轻量 `project-guardian` 防撞）、**`深度任务`**（自动开启完整架构与公式门禁）：
+
+> `/swarm`（中度/深度任务）读取 `TODO.md` 与 `docs/architecture/modules/`，由 Coordinator 独占维护 `docs/tracking/` 与 `plan.json`，Author 在 `swarm/<worker>` 分片隔离并行，合回后派独立 Verifier 审查验收再推 `main`。
+
 ### 去哪里看结果
 
 | 你想知道什么 | 在业务项目中打开 |

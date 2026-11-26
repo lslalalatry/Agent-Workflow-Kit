@@ -24,6 +24,8 @@ D-005 已落地并推送至 GitHub（`7a058c1`）。
 
 D-006 已落地并推送至 GitHub（`df5ed86`）。
 
-D-007 已在工作区实现：`query_docs.py` 渐进式索引与分段读取脚本、`tests/test_coherence.py` 模板/CLI/断链回归、术语 `Reference` 列、正常+反例 `Expectations`、`Browser Baseline` 与 `modern-web-guidance` 前端协同及防压缩猜规则原话锚点约束；双端全局与全量单测校验待同步提交。
+D-007 已落地并推送至 GitHub（`3865046`）。
+
+D-008、D-009 与 D-010 已合并实现：`08-swarm-orchestration.md` 与分级自动感应触发、`verify_guardrails.py` 过程放行与主干残留 worktree 硬拦截、`sync_global.py` 双端备份与 `--dry-run`、`query_docs.py modules` 总览与 `--any` 检索，正在执行全量回归并审查推送 `origin/main`。
 
 下轮修改先看本轮提交及工作区差异。运行 python3 -B -m unittest discover -s tests -v 核对提交和推送行为。

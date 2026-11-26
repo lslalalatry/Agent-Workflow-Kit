@@ -35,3 +35,11 @@ D-006 为多模块长任务建立四项机制：1）`docs/architecture/modules/_
 ## 渐进式文档检索、原子断言与仓库一致性回归
 
 D-007 补齐四项工程化防漂移能力：1）`tests/test_coherence.py` 自动化校验母版模板同源、`init_project.py` CLI 开关与 `SKILL.md` 一致性及全仓 Markdown 相对链接可达；2）`project-template/docs/tracking/SPEC.md` 术语表强制关联 `Reference` 落点，`modules/_TEMPLATE.md` 与 `API_AND_UI_STATES.md` 要求正常+反例原子断言（`Expectations`），`06-shared-decisions.md` 与 `07-code-review.md` 强制逐字核对 `D-编号`/`F-编号` 原文禁止凭记忆猜阈值；3）`API_AND_UI_STATES.md` 与 `01a-architecture-blueprint.md` 接入 `Browser Baseline`（默认 `Baseline Widely Available`）与 `modern-web-guidance` 协同；4）`skills/project-guardian/scripts/query_docs.py` 提供零第三方依赖的 `search`（紧凑索引）与 `read`（分段章节读取）CLI。
+
+## 原生 Swarm 多工匠协同与分片门禁（方案 A）
+
+D-008 打通 `project-guardian` 与原生 `/swarm` 协同：1）`SKILL.md` 仅在 `/swarm` 激活时路由 `08-swarm-orchestration.md`；2）Coordinator 为 `docs/tracking/` 唯一写者并维护 `swarm_pane` 交付视图，Author 在 `share` 工作区的 `swarm/<worker>` 分支并行开发各自模块及 `modules/*.md`，合回销毁后再派独立 Verifier 完成跨模块审查与默认入口验收；3）`verify_guardrails.py` 兼容过程态次级 worktree 与 `swarm/*` 分支（`--swarm-active`），同时在 `main` 正式提交收口时继续强制零分片残留、单一主干。
+
+D-009 补充 `/swarm` 自动感应触发机制：已接入项目（`project-template/AGENTS.md` §5）在启动 `/swarm` 时自动先读 `08-swarm-orchestration.md`；未接入目录通过全局规则 `COLLABORATION_PRINCIPLES.md` §14 按「轻度（不建档）/ 中度（`--with-decisions`）/ 深度（`--with-architecture` 全套）」任务分级自动判定或单句确认后接入。
+
+D-010 强化三项工程细节：1）`verify_guardrails.py` 在主分支正式收口时硬拦截残留 `git worktree`；2）`scripts/sync_global.py` 双端全局规则均做覆盖前当日备份并支持 `--dry-run`；3）`query_docs.py` 新增 `modules` 模块卡进度总览与 `search --any` OR 匹配。

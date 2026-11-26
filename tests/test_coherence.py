@@ -13,6 +13,8 @@ SKILL_ROOT = REPO_ROOT / "skills" / "project-guardian"
 SCRIPTS_DIR = SKILL_ROOT / "scripts"
 INIT_PROJECT = SCRIPTS_DIR / "init_project.py"
 QUERY_DOCS = SCRIPTS_DIR / "query_docs.py"
+VERIFY_GUARDRAILS = SCRIPTS_DIR / "verify_guardrails.py"
+CODE_REVIEW = SCRIPTS_DIR / "code_review.py"
 
 LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 CODE_SPAN_RE = re.compile(r"`[^`]*`")
@@ -84,7 +86,7 @@ class CoherenceTests(unittest.TestCase):
         for flag in sorted(flags):
             self.assertIn(flag, skill_text, f"{flag} is missing from skills/project-guardian/SKILL.md")
 
-        for subcmd in ([], ["search", "--help"], ["read", "--help"]):
+        for subcmd in ([], ["search", "--help"], ["read", "--help"], ["modules", "--help"]):
             cmd = [sys.executable, str(QUERY_DOCS), *(subcmd or ["--help"])]
             proc = subprocess.run(cmd, capture_output=True, text=True, check=True)
             self.assertIn("usage:", proc.stdout.lower())
@@ -137,9 +139,13 @@ class CoherenceTests(unittest.TestCase):
             )
             billing_mod = project / "docs" / "architecture" / "modules" / "billing.md"
             billing_mod.write_text(
-                "# 模块设计卡：计费对账 (`billing`)\n\n"
+                "# 模块设计卡：计费对账 (`billing`)\n"
+                "- **状态**：`in_progress`\n\n"
                 "## 1. 模块目标与边界\n"
-                "遵循 D-001 全额退款双扣口径。\n",
+                "遵循 D-001 全额退款双扣口径。\n\n"
+                "## 5. 原子验收断言（Expectations）\n"
+                "- [x] 正常断言：退款双扣通过\n"
+                "- [ ] 反例断言：空单返回 NULL\n",
                 encoding="utf-8",
             )
 
@@ -162,6 +168,37 @@ class CoherenceTests(unittest.TestCase):
             sources = {item["source"] for item in search_data["results"]}
             self.assertIn("docs/tracking/DECISIONS.md", sources)
             self.assertIn("docs/architecture/modules/billing.md", sources)
+
+            or_proc = subprocess.run(
+                [
+                    sys.executable,
+                    str(QUERY_DOCS),
+                    "search",
+                    "--root",
+                    str(project),
+                    "--query",
+                    "D-001 不存在的词",
+                    "--any",
+                    "--json",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            self.assertGreater(json.loads(or_proc.stdout)["returned"], 0)
+
+            mod_proc = subprocess.run(
+                [sys.executable, str(QUERY_DOCS), "modules", "--root", str(project), "--json"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            mod_data = json.loads(mod_proc.stdout)
+            self.assertEqual(mod_data["count"], 1)
+            self.assertEqual(mod_data["modules"][0]["status"], "in_progress")
+            self.assertEqual(mod_data["modules"][0]["checked"], 1)
+            self.assertEqual(mod_data["modules"][0]["total_assertions"], 2)
+            self.assertIn("D-001", mod_data["modules"][0]["refs"])
 
             read_proc = subprocess.run(
                 [
@@ -201,6 +238,158 @@ class CoherenceTests(unittest.TestCase):
                 text=True,
             )
             self.assertEqual(traversal.returncode, 2)
+
+    def test_swarm_worktree_branch_lifecycle_and_strict_main_closeout(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "swarm-demo"
+            wt_dir = Path(tmp) / "wt-alpha"
+            project.mkdir()
+            subprocess.run(
+                [sys.executable, str(INIT_PROJECT), str(project), "--with-architecture"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            for cmd in (
+                ["git", "config", "user.name", "Tester"],
+                ["git", "config", "user.email", "tester@example.com"],
+                ["git", "add", "."],
+            ):
+                subprocess.run(cmd, cwd=project, check=True, capture_output=True)
+
+            show_init = subprocess.run(
+                [sys.executable, str(CODE_REVIEW), "show"],
+                cwd=project,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            scope_init = show_init.stdout.splitlines()[0].split()[1]
+            subprocess.run(
+                [sys.executable, str(CODE_REVIEW), "record", "--scope", scope_init, "--summary", "init"],
+                cwd=project,
+                check=True,
+                capture_output=True,
+            )
+            subprocess.run(
+                ["git", "commit", "-m", "init"],
+                cwd=project,
+                check=True,
+                capture_output=True,
+            )
+
+            # Create a secondary worktree mimicking Swarm workspace="share" on swarm/alpha
+            subprocess.run(
+                ["git", "worktree", "add", "-b", "swarm/alpha", str(wt_dir)],
+                cwd=project,
+                check=True,
+                capture_output=True,
+            )
+            (wt_dir / "mod_alpha.py").write_text("VALUE = 42\n", encoding="utf-8")
+
+            # Inside swarm/alpha worktree, verify_guardrails allows shard development without touching STATUS.md
+            wt_guard = subprocess.run(
+                [sys.executable, str(VERIFY_GUARDRAILS), "--root", str(wt_dir), "--json"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            wt_report = json.loads(wt_guard.stdout)
+            self.assertTrue(wt_report["passed"], wt_report)
+            self.assertTrue(any("Swarm 分片开发中" in w for w in wt_report["warnings"]), wt_report)
+            self.assertTrue(any("Swarm 单写者模式" in w for w in wt_report["warnings"]), wt_report)
+
+            # Shard commit through real pre-commit hooks works without touching STATUS.md
+            subprocess.run(["git", "add", "mod_alpha.py"], cwd=wt_dir, check=True, capture_output=True)
+            show_wt = subprocess.run(
+                [sys.executable, str(CODE_REVIEW), "show"],
+                cwd=wt_dir,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            scope_wt = show_wt.stdout.splitlines()[0].split()[1]
+            subprocess.run(
+                [sys.executable, str(CODE_REVIEW), "record", "--scope", scope_wt, "--summary", "alpha shard"],
+                cwd=wt_dir,
+                check=True,
+                capture_output=True,
+            )
+            subprocess.run(
+                ["git", "commit", "-m", "swarm alpha"],
+                cwd=wt_dir,
+                check=True,
+                capture_output=True,
+            )
+
+            # On primary main: without --swarm-active, leftover swarm/* branch is strictly rejected;
+            # with --swarm-active (mid-flight check), it passes with warning.
+            strict_main = subprocess.run(
+                [sys.executable, str(VERIFY_GUARDRAILS), "--root", str(project), "--json"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(strict_main.returncode, 1)
+            strict_report = json.loads(strict_main.stdout)
+            self.assertFalse(strict_report["passed"])
+            self.assertTrue(any("残留分支拦截" in e for e in strict_report["errors"]), strict_report)
+
+            active_main = subprocess.run(
+                [sys.executable, str(VERIFY_GUARDRAILS), "--root", str(project), "--swarm-active", "--json"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            active_report = json.loads(active_main.stdout)
+            self.assertTrue(active_report["passed"], active_report)
+
+            # Closeout: even if branch is deleted, a lingering detached worktree must still be blocked on main
+            detached_wt = Path(tmp) / "wt-detached"
+            subprocess.run(
+                ["git", "worktree", "add", "--detach", str(detached_wt)],
+                cwd=project,
+                check=True,
+                capture_output=True,
+            )
+            subprocess.run(["git", "merge", "--squash", "swarm/alpha"], cwd=project, check=True, capture_output=True)
+            subprocess.run(["git", "worktree", "remove", str(wt_dir)], cwd=project, check=True, capture_output=True)
+            subprocess.run(["git", "branch", "-D", "swarm/alpha"], cwd=project, check=True, capture_output=True)
+
+            lingering_wt = subprocess.run(
+                [sys.executable, str(VERIFY_GUARDRAILS), "--root", str(project), "--json"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(lingering_wt.returncode, 1)
+            lingering_report = json.loads(lingering_wt.stdout)
+            self.assertTrue(any("残留 Worktree 拦截" in e for e in lingering_report["errors"]), lingering_report)
+            subprocess.run(["git", "worktree", "remove", str(detached_wt)], cwd=project, check=True, capture_output=True)
+
+            status_path = project / "docs" / "tracking" / "STATUS.md"
+            status_path.write_text(status_path.read_text(encoding="utf-8") + "\nMerged swarm/alpha.\n", encoding="utf-8")
+            subprocess.run(["git", "add", "."], cwd=project, check=True, capture_output=True)
+            show_close = subprocess.run(
+                [sys.executable, str(CODE_REVIEW), "show"],
+                cwd=project,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            scope_close = show_close.stdout.splitlines()[0].split()[1]
+            subprocess.run(
+                [sys.executable, str(CODE_REVIEW), "record", "--scope", scope_close, "--summary", "closeout"],
+                cwd=project,
+                check=True,
+                capture_output=True,
+            )
+            subprocess.run(["git", "commit", "-m", "close swarm"], cwd=project, check=True, capture_output=True)
+            final_guard = subprocess.run(
+                [sys.executable, str(VERIFY_GUARDRAILS), "--root", str(project), "--json"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            self.assertTrue(json.loads(final_guard.stdout)["passed"])
 
 
 if __name__ == "__main__":

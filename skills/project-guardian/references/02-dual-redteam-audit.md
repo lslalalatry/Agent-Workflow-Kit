@@ -17,6 +17,7 @@
 ## 二、执行方式
 
 - **支持 Subagent 的环境（如 Antigravity）**：并行调用两次只读 `research`（或 `self` 只读模式）子 Agent，分别注入下方 **红队 A** 与 **红队 B** 提示词。
+- **处于 `/swarm` 会话时**：由 Coordinator 分别派发 `redteam-logic` 与 `redteam-yagni`（`workspace: "inherit"`，**严禁传 `fork`**，确保零前序聊天历史偏见），各自只读原文档后直接 `@coordinator` 输出结论，详见 [08-swarm-orchestration.md](./08-swarm-orchestration.md)。
 - **不支持并行子任务的单线程环境**：主 Agent 显式分两步独立切换审查清单逐条扫描文件原文，严格对照检查项输出证据。
 
 ### 红队 A 提示词模板：系统逻辑、状态契约与计算审计员（Logic & Formula Auditor）

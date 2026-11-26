@@ -185,3 +185,11 @@
 - **先打生活化比方**：用日常场景（如装修工地、安检闸机、账本分栏、流水线卡口）把抽象机制翻译成直白画面。
 - **讲清实际后果**：直接说明选 A 会省什么心、有什么代价；选 B 会多什么风险，而不是复述技术实现名词。
 - **给出明确主推荐**：默认把最稳妥的选项放在第一位并标注推荐理由，让用户无需懂底层细节也能做出可靠决策。
+
+## 14. `/swarm` 并行任务与项目治理分级联动
+
+1. **已接入项目自动套用**：若当前仓库根目录已存在 `AGENTS.md` 与 `docs/tracking/`，用户在聊天中启动 `/swarm` 时，Coordinator **自动**先读取 `project-guardian` 的 `references/08-swarm-orchestration.md`，无需用户再次点名 `project-guardian`。
+2. **未接入项目按「轻度 / 中度 / 深度」分级决定**（用户提示词未标明且涉及多文件改动时，先用一句话确认级别，再决定是否初始化）：
+   - **轻度任务**（一次性脚本、纯只读调研或独立小页面）：直接用原生 `/swarm` 完成，不创建 `AGENTS.md` 与 `docs/tracking/`；
+   - **中度任务**（多模块并行改代码、需防撞与安全合回主干）：用 `project-guardian` 轻量接入（`--with-decisions`），按 `08-swarm-orchestration.md` 施工；
+   - **深度任务**（跨模块系统、涉算公式、集中存储或多轮长期交接）：完整接入 `project-guardian`（`--with-architecture --with-decisions`，涉计算加 `--with-formula`），先锁定规格与模块卡片再开 `/swarm` 并行。

@@ -20,7 +20,7 @@
      git checkout main
      git branch -D exp/<short-topic>
      ```
-4. **多 Worktree 禁令**：除非用户明确要求并行多代理同时写不同模块，否则**默认禁止创建 `git worktree`**（尤其在含大型依赖或本地数据的项目中，极易产生多套重复缓存与残留目录）。
+4. **多 Worktree 禁令与 Swarm 特例**：除非用户明确启动多代理并行（如 `/swarm` 会话），否则**默认禁止创建 `git worktree`**（尤其在含大型依赖或本地数据的项目中，极易产生多套重复缓存与残留目录）。进入 `/swarm` 模式时，仅允许按 [08-swarm-orchestration.md](./08-swarm-orchestration.md) 为 Author 分配 `share` 工作区与 `swarm/<worker>` 分片分支，合回主干后必须立即清理销毁。
 
 ---
 

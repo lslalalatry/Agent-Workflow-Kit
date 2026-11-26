@@ -184,20 +184,23 @@ def extract_entries(path: Path, rel_path: str) -> List[DocEntry]:
     return entries
 
 
-def score_entry(entry: DocEntry, tokens: List[str]) -> int:
+def score_entry(entry: DocEntry, tokens: List[str], match_any: bool = False) -> int:
     if not tokens:
         return 1
     hay_title = f"{entry.section_id} {entry.title} {entry.source}".lower()
     hay_body = entry.body_text.lower()
     score = 0
+    matched = 0
     for token in tokens:
         if token in hay_title:
             score += 3
+            matched += 1
         elif token in hay_body:
             score += 1
-        else:
+            matched += 1
+        elif not match_any:
             return 0
-    return score
+    return score if matched > 0 else 0
 
 
 def run_search(args: argparse.Namespace) -> int:
@@ -208,7 +211,7 @@ def run_search(args: argparse.Namespace) -> int:
     scored: List[Tuple[int, DocEntry]] = []
     for file_path, rel_path in files:
         for entry in extract_entries(file_path, rel_path):
-            score = score_entry(entry, tokens)
+            score = score_entry(entry, tokens, match_any=args.any)
             if score > 0:
                 scored.append((score, entry))
 
@@ -326,9 +329,63 @@ def run_read(args: argparse.Namespace) -> int:
     return 0
 
 
+def run_modules(args: argparse.Namespace) -> int:
+    root = Path(args.root).resolve()
+    modules_dir = root / "docs" / "architecture" / "modules"
+    rows: List[Dict[str, object]] = []
+    if modules_dir.is_dir():
+        for md_file in sorted(modules_dir.glob("*.md")):
+            if not md_file.is_file() or md_file.name == "_TEMPLATE.md":
+                continue
+            text = md_file.read_text(encoding="utf-8")
+            lines = text.splitlines()
+            title = md_file.stem
+            for line in lines:
+                m = HEADING_PATTERN.match(line)
+                if m:
+                    title = m.group(2).strip()
+                    break
+            status = "unknown"
+            for line in lines[:20]:
+                sm = re.search(r"(?:状态|status)\**\s*[：:]\s*\**`?([^`|*]+)`?", line, re.I)
+                if sm:
+                    status = sm.group(1).strip()
+                    break
+            checked = len(re.findall(r"^\s*[-*+]\s+`?\[[xX]\]`?", text, re.M))
+            unchecked = len(re.findall(r"^\s*[-*+]\s+`?\[[ ~]\]`?", text, re.M))
+            refs = sorted(set(ID_PATTERN.findall(text)))
+            rows.append(
+                {
+                    "module": md_file.stem,
+                    "source": md_file.relative_to(root).as_posix(),
+                    "title": title,
+                    "status": status,
+                    "checked": checked,
+                    "total_assertions": checked + unchecked,
+                    "refs": refs,
+                }
+            )
+
+    if args.json:
+        print(json.dumps({"root": str(root), "count": len(rows), "modules": rows}, ensure_ascii=False, indent=2))
+        return 0
+
+    if not rows:
+        print(f"[query_docs] No module cards found under {root / 'docs/architecture/modules'}")
+        return 0
+
+    print(f"[query_docs] {len(rows)} module card(s) under {root}:")
+    print("| Module | Status | Assertions | Refs | Path |")
+    print("| :--- | :--- | :--- | :--- | :--- |")
+    for r in rows:
+        ref_str = ", ".join(r["refs"]) if r["refs"] else "-"
+        print(f"| `{r['module']}` | `{r['status']}` | {r['checked']}/{r['total_assertions']} | {ref_str} | `{r['source']}` |")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Progressive search and bounded section reader for project-guardian tracking & architecture docs."
+        description="Progressive search, module dashboard, and bounded section reader for project-guardian docs."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -341,6 +398,7 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["all", "decisions", "formulas", "lexicon", "modules", "architecture", "tracking"],
         help="Restrict search scope (default: all).",
     )
+    search_p.add_argument("--any", action="store_true", help="Match any query token (OR) instead of requiring all tokens (AND).")
     search_p.add_argument("--limit", type=int, default=20, help="Maximum number of results to return (default: 20).")
     search_p.add_argument("--json", action="store_true", help="Output structured JSON.")
 
@@ -352,6 +410,10 @@ def build_parser() -> argparse.ArgumentParser:
     read_p.add_argument("--max-lines", type=int, default=80, help="Maximum lines per read (default: 80).")
     read_p.add_argument("--json", action="store_true", help="Output structured JSON.")
 
+    mod_p = subparsers.add_parser("modules", help="Summarize all docs/architecture/modules/*.md cards and assertion progress.")
+    mod_p.add_argument("--root", default=".", help="Project root directory (default: current directory).")
+    mod_p.add_argument("--json", action="store_true", help="Output structured JSON.")
+
     return parser
 
 
@@ -362,6 +424,8 @@ def main() -> int:
         return run_search(args)
     if args.command == "read":
         return run_read(args)
+    if args.command == "modules":
+        return run_modules(args)
     return 2
 
 

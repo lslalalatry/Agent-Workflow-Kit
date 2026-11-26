@@ -195,6 +195,13 @@
               <div class="muted" style="font-size:12px;">派 2 个零上下文子 Agent 分别死磕公式逻辑漏洞与过度设计加戏</div>
             </div>
           </label>
+          <label class="radio-card">
+            <input type="radio" name="scene" value="swarm" />
+            <div>
+              <div style="font-weight:600;font-size:13px;">多模块并行开工（<code>/swarm</code> 多工匠模式）</div>
+              <div class="muted" style="font-size:12px;">Coordinator 单写总账本，Author 在 <code>swarm/*</code> 分片隔离并行，合回后统一验收推主线</div>
+            </div>
+          </label>
         </div>
 
         <div id="addon-options" class="divider">
@@ -449,6 +456,14 @@
           '红队 A（逻辑与公式审计员）独立盲审：枚举打架、门禁死锁、跨池相除、舍入尾差、重跑幂等性；',
           '红队 B（极简与边界守门员）独立盲审：擅自加戏（YAGNI）、0/空值/负数边界、不可验证项误当通过；',
           '主 Agent 过滤吹毛求疵的假问题，把真正会翻车的硬伤翻译成直白选择题交你定夺。'
+        ];
+      } else if (scene === 'swarm') {
+        prompt = `/swarm【深度任务 / 中度任务 / 轻度任务（按需保留一个）】若当前项目已接入 project-guardian 则自动加载 08-swarm-orchestration.md；未接入时按该级别决定是否初始化。由 Coordinator 独占更新 docs/tracking/ 总账本并维护 plan.json；为独立子模块分别派发 workspace:"share" 的 Author（在各自 swarm/<worker> 分支开发、用 query_docs.py 核对 D-编号/F-编号原文、只更新各自 modules/*.md）；合回 main 并清理分片后再由独立 Verifier 完成跨模块代码审查与默认入口实测。`;
+        cli = `python3 ~/Documents/Agent-Workflow-Kit/skills/project-guardian/scripts/verify_guardrails.py --swarm-active`;
+        steps = [
+          'Coordinator 先读 TODO.md 与 modules/*.md 锁定共享契约并生成 plan.json，防止多人抢写同一总账本；',
+          '多个 Author 在各自 swarm/<worker> 分片分支（share 工作副本）并行编码与单测，严禁复制数据库；',
+          '合回 main 且清理 swarm/* 分支与临时工位后，派独立 Verifier 完成审查与验收，恢复严格单主线绿灯推上 main。'
         ];
       }
 

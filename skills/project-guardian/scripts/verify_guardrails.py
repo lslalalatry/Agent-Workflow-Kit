@@ -168,14 +168,31 @@ def check_agents_file(root: Path, errors: List[str]) -> Dict[str, object]:
     return parse_agents_profile(agents_path)
 
 
+def detect_secondary_worktree(root: Path) -> bool:
+    code1, git_dir = run_git(root, ["rev-parse", "--git-dir"])
+    code2, common_dir = run_git(root, ["rev-parse", "--git-common-dir"])
+    if code1 != 0 or code2 != 0 or not git_dir or not common_dir:
+        return False
+    gd = Path(git_dir)
+    cd = Path(common_dir)
+    gd_res = (gd if gd.is_absolute() else (root / gd)).resolve()
+    cd_res = (cd if cd.is_absolute() else (root / cd)).resolve()
+    return gd_res != cd_res
+
+
 def check_git_branches(
-    root: Path, primary_branch: str, errors: List[str], warnings: List[str]
-) -> bool:
+    root: Path,
+    primary_branch: str,
+    errors: List[str],
+    warnings: List[str],
+    allow_swarm_active: bool = False,
+) -> Tuple[bool, bool]:
     code, inside = run_git(root, ["rev-parse", "--is-inside-work-tree"])
     if code != 0 or inside != "true":
         warnings.append("[Git 未初始化] 当前目录尚未初始化 Git 仓库，跳过分支检查。")
-        return False
+        return False, False
 
+    in_secondary_wt = detect_secondary_worktree(root)
     _, branches_out = run_git(root, ["for-each-ref", "--format=%(refname:short)", "refs/heads/"])
     branches = [b.strip() for b in branches_out.splitlines() if b.strip()]
     _, current_branch = run_git(root, ["symbolic-ref", "--short", "-q", "HEAD"])
@@ -184,22 +201,49 @@ def check_git_branches(
     if trunk not in branches and "master" in branches and primary_branch == "main":
         trunk = "master"
 
+    is_swarm_worker = in_secondary_wt or current_branch.startswith("swarm/")
+
     if not branches:
-        if current_branch and current_branch not in {trunk, "master"}:
+        if current_branch and current_branch not in {trunk, "master"} and not current_branch.startswith("swarm/"):
             errors.append(
                 f"[主分支违规] 初始分支名为 '{current_branch}'，必须使用唯一主分支 '{trunk}'（运行 git branch -M {trunk}）。"
             )
-        return True
+        return True, is_swarm_worker
 
     if current_branch == trunk:
         extra = [b for b in branches if b != trunk]
         if extra:
+            if allow_swarm_active and all(b.startswith("swarm/") for b in extra):
+                warnings.append(
+                    f"[Swarm 进行中] 主分支 '{trunk}' 当前存在并行分片分支: {', '.join(extra)}。"
+                    " 合回并清理全部分片分支后方可正式提交收口。"
+                )
+            else:
+                errors.append(
+                    f"[残留分支拦截] 当前处于主分支 '{trunk}'，但仓库仍残留未收口的分支: {', '.join(extra)}。"
+                    f" 必须先合并删除（git merge --no-ff <分支> && git branch -d <分支>）或放弃删除（git branch -D <分支>）。"
+                )
+    elif current_branch.startswith("swarm/"):
+        invalid_extra = [
+            b for b in branches if b != trunk and not b.startswith("swarm/") and not b.startswith("exp/")
+        ]
+        if invalid_extra:
             errors.append(
-                f"[残留分支拦截] 当前处于主分支 '{trunk}'，但仓库仍残留未收口的分支: {', '.join(extra)}。"
-                f" 必须先合并删除（git merge --no-ff <分支> && git branch -d <分支>）或放弃删除（git branch -D <分支>）。"
+                f"[非法分支并存] 并行分片开发期间发现未受控分支: {', '.join(invalid_extra)}。"
             )
+        else:
+            warnings.append(
+                f"[Swarm 分片开发中] 当前处于并行工位分支 '{current_branch}'。"
+                f" 完成后须由 Coordinator 合回 '{trunk}' 并清理全部分片。"
+            )
+    elif not current_branch and in_secondary_wt:
+        warnings.append(
+            f"[Swarm 次级 Worktree] 当前处于隔离工作副本游离态。合回 '{trunk}' 后请随 Swarm 销毁。"
+        )
     elif current_branch.startswith("exp/"):
         other_extra = [b for b in branches if b not in {trunk, current_branch}]
+        if allow_swarm_active:
+            other_extra = [b for b in other_extra if not b.startswith("swarm/")]
         if other_extra:
             errors.append(
                 f"[多实验分支拦截] 同时存在多个非主干分支: {', '.join([current_branch, *other_extra])}。"
@@ -211,16 +255,22 @@ def check_git_branches(
             )
     else:
         errors.append(
-            f"[非法分支名] 当前分支 '{current_branch or 'DETACHED_HEAD'}' 既非主分支 '{trunk}'，也非临时实验分支 'exp/<topic>'。"
+            f"[非法分支名] 当前分支 '{current_branch or 'DETACHED_HEAD'}' 既非主分支 '{trunk}'，也非临时分支 'exp/*' / 'swarm/*'。"
         )
 
     _, wt_out = run_git(root, ["worktree", "list", "--porcelain"])
     wt_count = sum(1 for line in wt_out.splitlines() if line.startswith("worktree "))
     if wt_count > 1:
-        warnings.append(
-            f"[Worktree 提醒] 检测到 {wt_count} 个 Git worktree。任务完成后请确认清理多余 worktree 且未复制大数据库。"
-        )
-    return True
+        if current_branch == trunk and not allow_swarm_active and not in_secondary_wt:
+            errors.append(
+                f"[残留 Worktree 拦截] 检测到 {wt_count} 个 Git worktree，当前在主分支 '{trunk}' 收口前必须先清理多余 worktree"
+                "（执行 swarm kill 或 git worktree remove <路径>）。"
+            )
+        else:
+            warnings.append(
+                f"[Worktree 提醒] 检测到 {wt_count} 个 Git worktree。任务完成后请确认清理多余 worktree 且未复制大数据库。"
+            )
+    return True, is_swarm_worker
 
 
 def check_storage_sprawl(
@@ -303,6 +353,7 @@ def check_tracking_docs(
     hook_mode: str,
     errors: List[str],
     warnings: List[str],
+    is_swarm_worker: bool = False,
 ) -> None:
     configured_rel = str(profile["tracking_dir"])
     tdir = resolve_tracking_dir(root, configured_rel)
@@ -398,7 +449,13 @@ def check_tracking_docs(
         implementation = sorted(f for f in changed if not is_governance_or_doc(f)
                                 and not f.startswith((Path(rel_tdir) / "evidence").as_posix() + "/"))
         if implementation and status_rel not in changed:
-            errors.append(f"[追踪文档未同步拦截] 修改了实现文件 {', '.join(implementation[:4])}，请同步 {status_rel} 并在提交前暂存。")
+            if is_swarm_worker:
+                warnings.append(
+                    f"[Swarm 单写者模式] 并行工位改动 {', '.join(implementation[:4])} 暂免修改 {status_rel}；"
+                    f"合回 '{profile['primary_branch']}' 后须由 Coordinator 统一更新并验收。"
+                )
+            else:
+                errors.append(f"[追踪文档未同步拦截] 修改了实现文件 {', '.join(implementation[:4])}，请同步 {status_rel} 并在提交前暂存。")
         chat_sync.check_bundle(root, rel_tdir, revision, changed)
         acceptance.check_changes(root, rel_tdir, revision, changed, implementation, profile["enable_formula_doc"])
     except (ValueError, OSError) as exc:
@@ -409,6 +466,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Verify Universal Project Guardian Guardrails.")
     parser.add_argument("--root", default=None, help="Project root path (defaults to Git root or CWD).")
     parser.add_argument("--hook", choices=["none", "pre-commit", "init"], default="none", help="Git hook mode.")
+    parser.add_argument("--swarm-active", action="store_true", help="Allow in-progress swarm/* shard branches during non-closing checks on trunk.")
     parser.add_argument("--json", action="store_true", help="Print JSON report.")
     args = parser.parse_args()
 
@@ -428,9 +486,15 @@ def main() -> int:
             profile = parse_agents_profile(root / "AGENTS.md", indexed_profile)
         else:
             errors.append("[宪章缺失] 候选提交中缺少 AGENTS.md，请先将项目规则暂存。")
-    has_git = check_git_branches(root, str(profile["primary_branch"]), errors, warnings)
+    has_git, is_swarm_worker = check_git_branches(
+        root,
+        str(profile["primary_branch"]),
+        errors,
+        warnings,
+        allow_swarm_active=args.swarm_active and args.hook != "pre-commit",
+    )
     check_storage_sprawl(root, has_git, list(profile["allowed_storage_paths"]), errors)
-    check_tracking_docs(root, profile, has_git, args.hook, errors, warnings)
+    check_tracking_docs(root, profile, has_git, args.hook, errors, warnings, is_swarm_worker=is_swarm_worker)
 
     passed = len(errors) == 0
 
