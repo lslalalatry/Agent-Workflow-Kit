@@ -31,3 +31,7 @@ D-005 要求 `init_project.py` 支持 `--with-architecture`（对应 `AGENTS.md`
 ## 子模块闭环、主线推送策略与增减功能规程
 
 D-006 为多模块长任务建立四项机制：1）`docs/architecture/modules/_TEMPLATE.md` 定义一模块一卡标准格式；2）`AGENTS.md` 新增 `delivery_mode`（`prompt_push_on_done` 默认强提醒 | `auto_push_main_when_clean` 经 `--auto-push` 开启且满足全绿/审查/闸机/无冲突 `rebase` 时自动提交推 `main`）；3）子模块推平后主动发出「🟢 本任务已完结，建议立即新开对话框」信号；4）临近收尾时新增功能先登记进 `DRAFT.md / BACKLOG.md` 不打断当前主线闭环，减功能按锁决策、清入口、保只读历史数据与全量复测四步下线。
+
+## 渐进式文档检索、原子断言与仓库一致性回归
+
+D-007 补齐四项工程化防漂移能力：1）`tests/test_coherence.py` 自动化校验母版模板同源、`init_project.py` CLI 开关与 `SKILL.md` 一致性及全仓 Markdown 相对链接可达；2）`project-template/docs/tracking/SPEC.md` 术语表强制关联 `Reference` 落点，`modules/_TEMPLATE.md` 与 `API_AND_UI_STATES.md` 要求正常+反例原子断言（`Expectations`），`06-shared-decisions.md` 与 `07-code-review.md` 强制逐字核对 `D-编号`/`F-编号` 原文禁止凭记忆猜阈值；3）`API_AND_UI_STATES.md` 与 `01a-architecture-blueprint.md` 接入 `Browser Baseline`（默认 `Baseline Widely Available`）与 `modern-web-guidance` 协同；4）`skills/project-guardian/scripts/query_docs.py` 提供零第三方依赖的 `search`（紧凑索引）与 `read`（分段章节读取）CLI。

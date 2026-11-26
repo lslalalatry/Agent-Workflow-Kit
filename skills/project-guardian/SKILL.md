@@ -19,7 +19,7 @@ description: >-
 
 1. **一键初始化项目骨架与自动安检闸机**：
    ```bash
-   python3 "<本Skill目录>/scripts/init_project.py" "<目标项目根目录>" [--minimal | --with-architecture] [--with-formula] [--with-decisions] [--auto-push]
+   python3 "<本Skill目录>/scripts/init_project.py" "<目标项目根目录>" [--minimal | --with-architecture] [--with-formula] [--with-decisions] [--auto-push] [--no-hook]
    ```
    - 自动创建或补齐根目录 `AGENTS.md` 与 `docs/tracking/` 追踪文档（默认绝不覆盖已有文件）；
    - 启用 `--with-architecture` 时额外创建分域架构知识库 `docs/architecture/`（含 `DRAFT.md`、技术架构/集中存储与图片存储、数据模型、权限模型、API/UI 五态清单、部署 QA 与子模块卡模板 `modules/_TEMPLATE.md`）与 `deploy/` 部署骨架；
@@ -32,6 +32,13 @@ description: >-
    python3 "<本Skill目录>/scripts/verify_guardrails.py" --root "<目标项目根目录>"
    ```
    - 核查项：① 本地是否仅剩唯一主分支（无悬空 `exp/*` 残留分支）；② 是否存在未在 `AGENTS.md` 白名单登记的数据库或超大副本；③ 代码变更是否同步更新了 `STATUS.md`；④ `AGENTS.md <= 20KB` 且 `STATUS.md <= 100` 行，且无带日期后缀的重复追踪文档。
+
+3. **渐进式按需查询大型追踪/架构文档（多模块省上下文必用）**：
+   ```bash
+   python3 "<本Skill目录>/scripts/query_docs.py" search --root "<目标项目根目录>" --query "<D-编号 / 术语 / 模块名>"
+   python3 "<本Skill目录>/scripts/query_docs.py" read --root "<目标项目根目录>" --path "<相对路径>" --section "<段落或编号>"
+   ```
+   - 先输出紧凑索引（`文件:行范围 | [编号] 标题`），再只读取命中章节（默认最多 80 行自动分段），禁止盲目整文件塞入上下文，并强制核对 `D-编号`/`F-编号` 原文而非凭记忆猜规则。
 
 ---
 

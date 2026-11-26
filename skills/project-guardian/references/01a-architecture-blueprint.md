@@ -30,7 +30,7 @@
 | **3. 图片与富媒体存储** | `ARCHITECTURE.md` + `DATA_MODEL.md` | **严禁业务图片进 Git、严禁无上限堆本地系统盘、严禁长期只存第三方易失效外链。** 二进制文件存哪类对象存储（OSS/COS/S3/R2）？是否按 SHA-256 内容寻址去重？元数据表存哪些字段？私有预览（短时效预签名 + 缩略图）与公开外联（如邮件配图独立只读前缀）如何隔离？ |
 | **4. 业务术语与跨模块边界** | `README.md` / `SPEC.md` | 全仓唯一术语表与封闭枚举值是什么？超复杂多模块时，是否需要按子域拆入 `docs/architecture/modules/<module>.md`？ |
 | **5. 权限模型与凭据安全** | `SECURITY_AND_AUTH.md` | 角色与资源操作矩阵（RBAC）是什么？多租户/成员数据如何做行级隔离？未登录默认拒绝策略是什么？密钥、Token、Cookie 存在哪，如何保证不进前端、Git、日志或截图？ |
-| **6. 接口契约与前端多态清单** | `API_AND_UI_STATES.md` | 统一响应/分页/错误码结构是什么？列表与详情组件必须显式覆盖哪五态：**加载中（Loading）、真实空（Empty）、真实零（Zero）、部分失败/不可验证（Partial/Unverifiable）、无权限（Forbidden）**？ |
+| **6. 接口契约与前端多态清单** | `API_AND_UI_STATES.md` | 统一响应/分页/错误码结构是什么？列表与详情组件必须显式覆盖哪五态：**加载中（Loading）、真实空（Empty）、真实零（Zero）、部分失败/不可验证（Partial/Unverifiable）、无权限（Forbidden）**？若含 Web UI：`Browser Baseline`（默认 `Baseline Widely Available`）如何设定？是否按需协同 `modern-web-guidance`（`search` -> `retrieve`）优先采用原生平台能力？ |
 | **7. 草稿缓冲与正式晋升** | `DRAFT.md` | 未拍板的架构猜想、多方案对比、待调研外部 API 统一放入 `DRAFT.md`，确认后再晋升进 `SPEC.md`、`DATA_MODEL.md` 与 `TODO.md`；禁止把未定稿猜想混进正式规格。 |
 | **8. 环境、QA 部署与回滚** | `DEPLOYMENT_AND_QA.md` + `deploy/` | 本地 / 测试（QA）/ 生产三套环境配置契约（`.env.example`）差异是什么？部署与迁移是否幂等？备份是否经过**真实隔离还原演练**？一键回滚命令是什么？ |
 

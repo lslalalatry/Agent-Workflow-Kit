@@ -145,6 +145,7 @@ Agent-Workflow-Kit/
 │       └── scripts/
 │           ├── init_project.py            # 一键给任意项目装好模板 + 自动安检闸机
 │           ├── chat_sync.py               # 读写多个对话共享的决定和追踪文档
+│           ├── query_docs.py              # 大项目追踪与架构文档渐进式索引查询
 │           ├── acceptance.py              # 运行项目验收并保存观察结果
 │           ├── code_review.py             # 提交与推送前绑定并核对 AI 差异审查记录
 │           └── verify_guardrails.py       # 提交时核对仓库状态与验收证据

@@ -20,10 +20,10 @@
 
 ## 2. 全局受控术语与枚举字典（一词一义锁）
 
-| 标准中文名 | 唯一代码标识 / 字段名 | 允许的封闭枚举值（全集） | 严禁混用的同义词 |
-| :--- | :--- | :--- | :--- |
-| `<例如：任务状态>` | `task_status` | `pending \| running \| succeeded \| failed \| unverifiable` | `done / ok / error / processing` |
-| `<补充术语>` | `<identifier>` | `<enum_or_type>` | `<forbidden_synonyms>` |
+| 标准中文名 | 唯一代码标识 / 字段名 | 允许的封闭枚举值（全集） | 代码 / 表落点（Reference） | 严禁混用的同义词 |
+| :--- | :--- | :--- | :--- | :--- |
+| `<例如：任务状态>` | `task_status` | `pending \| running \| succeeded \| failed \| unverifiable` | `<如 db.tasks.status / api/tasks.py>` | `done / ok / error / processing` |
+| `<补充术语>` | `<identifier>` | `<enum_or_type>` | `<file_or_table_ref>` | `<forbidden_synonyms>` |
 
 ---
 

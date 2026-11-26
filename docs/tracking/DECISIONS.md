@@ -35,3 +35,9 @@ README 和离线使用指南分别列出首次接入和已接入项目升级。�
 用户确认两项主线闭环与范围治理策略：1）新增 `delivery_mode` 配置项及 `--auto-push` 初始化选项（`auto_push_main_when_clean` 在测试全绿、代码审查、安检闸机与无冲突 `rebase` 全部通过后自动提交推送 `main`；默认 `prompt_push_on_done` 在结尾输出强提醒卡），并在子模块完结推平后主动提示“可以新开对话框”；2）一子模块一卡（`modules/_TEMPLATE.md`），临近收尾时的新功能需求默认先登记入 `DRAFT.md / BACKLOG.md` 待当前推完 `main` 后新开窗口处理，减功能按四步软下线清理代码、保留只读历史并登记决策。同步全局规则、模板、指南并推送 GitHub。
 
 <!-- guardian-decision D-006 affects=BACKLOG.md,SPEC.md,STATUS.md -->
+
+## D-007 · 2026-11-26 · 生效
+
+用户批准结合 `GoogleChrome/modern-web-guidance-src` 设计思想同时落地四项强化：1）新增 `tests/test_coherence.py`，机械回归校验 `project-template` 与打包副本一致、`init_project.py` 全量 CLI 开关在 `SKILL.md` 文档齐全以及全仓内部 Markdown 相对链接无死链；2）`SPEC.md` 术语表增加 `代码/表落点（Reference）` 列，模块设计卡与 `API_AND_UI_STATES.md` 升级为带正常+反例的原子验收断言（`Expectations`），并在 `06-shared-decisions.md` 与 `07-code-review.md` 严禁凭长对话压缩记忆猜测约束/阈值、强制逐字核对 `D-编号`/`F-编号` 原文；3）在 `API_AND_UI_STATES.md` 与 `01a-architecture-blueprint.md` 增加 `Browser Baseline`（默认 `Baseline Widely Available`）策略位及 `modern-web-guidance`（`search -> retrieve`）原生前端协同指引；4）新增零第三方依赖脚本 `skills/project-guardian/scripts/query_docs.py`（`search` 紧凑索引 + `read` 章节/行号分段读取），供多模块大项目渐进式按需查询。
+
+<!-- guardian-decision D-007 affects=BACKLOG.md,SPEC.md,STATUS.md -->

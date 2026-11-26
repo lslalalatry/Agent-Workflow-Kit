@@ -22,6 +22,8 @@ D-004 已落地：新增双轨理论白皮书 docs/THEORETICAL_FOUNDATIONS.md �
 
 D-005 已落地并推送至 GitHub（`7a058c1`）。
 
-D-006 已落地：新增子模块卡模板 `modules/_TEMPLATE.md`、`--auto-push` 与 `delivery_mode` 主线推送策略、增减功能四步规程及任务完结新开对话框提醒，双端全局与回归测试同步收口中。
+D-006 已落地并推送至 GitHub（`df5ed86`）。
+
+D-007 已在工作区实现：`query_docs.py` 渐进式索引与分段读取脚本、`tests/test_coherence.py` 模板/CLI/断链回归、术语 `Reference` 列、正常+反例 `Expectations`、`Browser Baseline` 与 `modern-web-guidance` 前端协同及防压缩猜规则原话锚点约束；双端全局与全量单测校验待同步提交。
 
 下轮修改先看本轮提交及工作区差异。运行 python3 -B -m unittest discover -s tests -v 核对提交和推送行为。
