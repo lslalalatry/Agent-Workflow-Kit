@@ -67,7 +67,7 @@
    - 最小实现与端到端验证：按技能 references/05-acceptance.md 实跑手算样例与默认入口验收，对照原始目标并记录结果；
    - 文档三联同步：同步更新 `SPEC.md`（若有行为变更）、`FORMULA.md`（若有公式变更）、`TODO.md` 与 `STATUS.md`（刷新 **「断点接力锚点」**，确保流中断或换新窗口一句“继续”即可无损恢复）。
 5. 提交或上传前，AI 按 `project-guardian/references/07-code-review.md` 审查暂存差异与受影响调用方。检查重复实现、无用分支、额外依赖和行为回归，修复阻断项并记录本次实读的版本。推送复用匹配的记录。
-6. **阶段 5 · 自动安检闸机收口**：运行 `verify_guardrails.py`（已挂载于 `.git/hooks/pre-commit`），确认单主线、零未登记数据库/大副本、追踪文档已同步且未超限。交接节点按项目已有授权分别执行 commit、push，缺少授权时提示实际待办。
+6. **阶段 5 · 自动安检闸机与主线推送收口**：运行 `verify_guardrails.py`（已挂载于 `.git/hooks/pre-commit`），确认单主线、零未登记数据库/大副本、追踪文档已同步且未超限。若 `delivery_mode` 为 `auto_push_main_when_clean` 且测试、代码审查、闸机与 `rebase origin/<主分支>` 均无异常，AI 自动提交并推送 `<主分支>`；否则输出「交付与主线同步提醒卡」。任务完结推平后主动提示用户 **「可新开对话框」**；新增功能未完结前先入 `DRAFT/BACKLOG`，减功能执行下线清理并记 `DECISIONS.md`。
    - **硬禁令**：未经用户当轮明确书面指令，**绝对禁止使用 `git commit --no-verify` 或修改/跳过 `.git/hooks/pre-commit`**。
 
 ---
@@ -80,6 +80,7 @@
 project_name: "<填写项目名称>"
 one_line_goal: "<一句话说明项目解决的核心问题>"
 primary_branch: "main"
+delivery_mode: "prompt_push_on_done"  # prompt_push_on_done（完结强提醒确认推送）| auto_push_main_when_clean（全检绿灯无冲突自动提交推送 main）
 tracking_dir: "docs/tracking"
 enable_architecture_doc: false   # 需要完整系统架构蓝图（集中数据库/图片存储/权限/多态/部署）时设为 true
 enable_formula_doc: false        # 含数值/统计/权重/物理几何计算时必须设为 true

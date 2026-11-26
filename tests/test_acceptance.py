@@ -250,6 +250,7 @@ class AcceptanceTests(unittest.TestCase):
             "DEPLOYMENT_AND_QA.md",
         ):
             self.assertTrue((arch_dir / name).is_file(), f"missing {name}")
+        self.assertTrue((arch_dir / "modules/_TEMPLATE.md").is_file())
         self.assertTrue((self.root / "deploy/README.md").is_file())
         self.call("git", "add", ".")
         self.commit("initialize with architecture blueprint")
@@ -257,10 +258,11 @@ class AcceptanceTests(unittest.TestCase):
         # Pure architecture doc edits should not require touching STATUS.md, and re-init keeps edits.
         arch_doc = arch_dir / "ARCHITECTURE.md"
         arch_doc.write_text(arch_doc.read_text() + "\n## 补充架构笔记\n复用既有 PG。\n")
-        self.init("--with-architecture")
+        self.init("--with-architecture", "--auto-push")
         self.assertIn("复用既有 PG", arch_doc.read_text())
-        self.call("git", "add", "docs/architecture/ARCHITECTURE.md")
-        self.commit("update architecture doc only")
+        self.assertIn('delivery_mode: "auto_push_main_when_clean"', (self.root / "AGENTS.md").read_text())
+        self.call("git", "add", "AGENTS.md", "docs/architecture/ARCHITECTURE.md")
+        self.commit("update architecture doc and enable auto_push")
 
         # Unwhitelisted databases inside docs/architecture must still be blocked by guardrails.
         rogue_db = arch_dir / "shadow.sqlite3"

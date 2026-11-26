@@ -262,6 +262,20 @@ def copy_architecture_bundle(tpl_root: Path, target: Path, logs: List[str]) -> N
                 logs.append(f"已创建部署目录骨架 (deploy/{rel.as_posix()})")
 
 
+def set_delivery_mode(path: Path, mode: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    pattern = re.compile(r'^(?P<indent>[ \t]*)delivery_mode[ \t]*:[^#\r\n]*(?P<comment>#[^\n]*)?$', re.M)
+    if pattern.search(text):
+        updated = pattern.sub(
+            lambda m: f'{m["indent"]}delivery_mode: "{mode}"' + ("  " + m["comment"] if m["comment"] else ""),
+            text,
+        )
+    else:
+        updated = text.rstrip() + f'\n\n```yaml\ndelivery_mode: "{mode}"\n```\n'
+    if updated != text:
+        path.write_text(updated, encoding="utf-8")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Initialize Project Guardian templates and gatekeeper.")
     parser.add_argument("target", nargs="?", default=".", help="Target project directory.")
@@ -269,6 +283,7 @@ def main() -> int:
     parser.add_argument("--with-architecture", action="store_true", help="Enable and create modular docs/architecture/ blueprint and deploy/ skeleton.")
     parser.add_argument("--with-formula", action="store_true", help="Enable and create FORMULA.md.")
     parser.add_argument("--with-decisions", action="store_true", help="Enable and create DECISIONS.md.")
+    parser.add_argument("--auto-push", action="store_true", help="Authorize automatic commit & push to primary branch when tests, review, guardrails, and rebase are clean.")
     parser.add_argument("--no-hook", action="store_true", help="Skip installing Git pre-commit and pre-push hooks.")
     args = parser.parse_args()
 
@@ -295,6 +310,8 @@ def main() -> int:
             agents_text = agents_text.replace("enable_formula_doc: false", "enable_formula_doc: true")
         if args.with_decisions:
             agents_text = agents_text.replace("enable_decisions_doc: false", "enable_decisions_doc: true")
+        if args.auto_push:
+            agents_text = agents_text.replace('delivery_mode: "prompt_push_on_done"', 'delivery_mode: "auto_push_main_when_clean"')
         agents_dst.write_text(agents_text, encoding="utf-8")
         logs.append("已创建根目录 AGENTS.md")
     else:
@@ -305,6 +322,9 @@ def main() -> int:
                                                    ("enable_decisions_doc", args.with_decisions)) if enabled]
     if requested_flags:
         enable_profile_documents(agents_dst, requested_flags)
+    if args.auto_push:
+        set_delivery_mode(agents_dst, "auto_push_main_when_clean")
+        logs.append("已开启受控主线自动推送模式 (delivery_mode: auto_push_main_when_clean)")
     profile = parse_agents_profile(agents_dst)
     tracking_dst = resolve_tracking_dir(target, profile["tracking_dir"]).resolve()
     if tracking_dst != target and target not in tracking_dst.parents:

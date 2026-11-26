@@ -29,3 +29,9 @@ README 和离线使用指南分别列出首次接入和已接入项目升级。�
 用户参考外部模块化项目框架，要求将 `project-guardian` 升级为通用架构治理技能：每次新项目或重大架构启动前，支持先盘点已有数据库与基础设施并落盘完整通用架构蓝图（集中存储、图片对象存储、数据模型、权限与凭据、接口与 UI 多态清单、`DRAFT.md` 草稿缓冲区、QA 部署与回滚），新增 `--with-architecture` 与 `references/01a-architecture-blueprint.md`，并同步至双端全局技能目录。
 
 <!-- guardian-decision D-005 affects=BACKLOG.md,SPEC.md,STATUS.md -->
+
+## D-006 · 2026-11-26 · 生效
+
+用户确认两项主线闭环与范围治理策略：1）新增 `delivery_mode` 配置项及 `--auto-push` 初始化选项（`auto_push_main_when_clean` 在测试全绿、代码审查、安检闸机与无冲突 `rebase` 全部通过后自动提交推送 `main`；默认 `prompt_push_on_done` 在结尾输出强提醒卡），并在子模块完结推平后主动提示“可以新开对话框”；2）一子模块一卡（`modules/_TEMPLATE.md`），临近收尾时的新功能需求默认先登记入 `DRAFT.md / BACKLOG.md` 待当前推完 `main` 后新开窗口处理，减功能按四步软下线清理代码、保留只读历史并登记决策。同步全局规则、模板、指南并推送 GitHub。
+
+<!-- guardian-decision D-006 affects=BACKLOG.md,SPEC.md,STATUS.md -->

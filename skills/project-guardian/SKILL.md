@@ -13,16 +13,17 @@ description: >-
 
 准备提交或上传时，先按[AI 代码审查](./references/07-code-review.md)实读本次差异，修复阻断问题并登记对应版本。推送时复用已经核对的记录。
 
-收到用户拍板、在旧对话继续动手或准备 Git 交接时，先读[多对话决策与交接](./references/06-shared-decisions.md)。收到拍板的对话在本轮同步所有受影响文档。多对话项目初始化时使用 `--with-decisions`。
+收到用户拍板、增减子模块功能、在旧对话继续动手或准备主线交付（含自动推送 `main` 与新开窗口提示）时，先读[多对话决策、子模块闭环与主线交接](./references/06-shared-decisions.md)。收到拍板的对话在本轮同步所有受影响文档。多对话项目初始化时使用 `--with-decisions`。
 
 ## 一、核心工具脚本（零第三方依赖，Python 3 标准库）
 
 1. **一键初始化项目骨架与自动安检闸机**：
    ```bash
-   python3 "<本Skill目录>/scripts/init_project.py" "<目标项目根目录>" [--minimal | --with-architecture] [--with-formula] [--with-decisions]
+   python3 "<本Skill目录>/scripts/init_project.py" "<目标项目根目录>" [--minimal | --with-architecture] [--with-formula] [--with-decisions] [--auto-push]
    ```
    - 自动创建或补齐根目录 `AGENTS.md` 与 `docs/tracking/` 追踪文档（默认绝不覆盖已有文件）；
-   - 启用 `--with-architecture` 时额外创建分域架构知识库 `docs/architecture/`（含 `DRAFT.md`、技术架构/集中存储与图片存储、数据模型、权限模型、API/UI 五态清单、部署 QA）与 `deploy/` 部署骨架；
+   - 启用 `--with-architecture` 时额外创建分域架构知识库 `docs/architecture/`（含 `DRAFT.md`、技术架构/集中存储与图片存储、数据模型、权限模型、API/UI 五态清单、部署 QA 与子模块卡模板 `modules/_TEMPLATE.md`）与 `deploy/` 部署骨架；
+   - 启用 `--auto-push` 时设置 `delivery_mode: "auto_push_main_when_clean"`：子模块测试、代码审查、安检闸机与 `rebase` 均通过后自动提交推送 `main` 并提示“可新开对话框”；
    - 若尚未初始化 Git，自动初始化单主线 `main`；
    - 安装 Git 提交与推送检查，实际检查初始状态，将通过或失败原因写回 STATUS.md。
 

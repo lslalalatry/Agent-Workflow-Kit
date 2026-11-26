@@ -73,6 +73,7 @@ def run_git(root: Path, args: List[str]) -> Tuple[int, str]:
 def parse_agents_profile(agents_path: Path, text=None) -> Dict[str, object]:
     profile: Dict[str, object] = {
         "primary_branch": "main",
+        "delivery_mode": "prompt_push_on_done",
         "tracking_dir": "docs/tracking",
         "enable_architecture_doc": False,
         "enable_formula_doc": False,
@@ -106,6 +107,8 @@ def parse_agents_profile(agents_path: Path, text=None) -> Dict[str, object]:
         key, val = m.group(1), m.group(2).strip().strip("\"'")
         if key == "primary_branch" and val and not val.startswith("<"):
             profile["primary_branch"] = val
+        elif key == "delivery_mode" and val and not val.startswith("<"):
+            profile["delivery_mode"] = val
         elif key == "tracking_dir" and val and not val.startswith("<"):
             profile["tracking_dir"] = val.strip("/")
         elif key == "enable_architecture_doc":

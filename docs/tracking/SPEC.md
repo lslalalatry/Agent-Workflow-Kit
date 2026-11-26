@@ -27,3 +27,7 @@ D-004 新增独立离线文档 `docs/THEORETICAL_FOUNDATIONS.md`，以「学术�
 ## 通用分域架构蓝图（`--with-architecture`）
 
 D-005 要求 `init_project.py` 支持 `--with-architecture`（对应 `AGENTS.md` 中 `enable_architecture_doc: true`），非覆盖式生成 `docs/architecture/` 分域模板（`README`、`DRAFT`、`ARCHITECTURE`、`DATA_MODEL`、`SECURITY_AND_AUTH`、`API_AND_UI_STATES`、`DEPLOYMENT_AND_QA`、`images/`、`modules/`）与 `deploy/README.md`。`01a-architecture-blueprint.md` 指导 AI 开局先盘点已有数据库与云基础设施，再对齐集中存储、图片对象存储、权限、UI 多态与回滚。`verify_guardrails.py` 在启用 `enable_architecture_doc` 时核查核心架构文档存在，免除纯文档变更对 `STATUS.md` 的强制绑定，同时继续拦截目录内未登记数据库与超大文件。
+
+## 子模块闭环、主线推送策略与增减功能规程
+
+D-006 为多模块长任务建立四项机制：1）`docs/architecture/modules/_TEMPLATE.md` 定义一模块一卡标准格式；2）`AGENTS.md` 新增 `delivery_mode`（`prompt_push_on_done` 默认强提醒 | `auto_push_main_when_clean` 经 `--auto-push` 开启且满足全绿/审查/闸机/无冲突 `rebase` 时自动提交推 `main`）；3）子模块推平后主动发出「🟢 本任务已完结，建议立即新开对话框」信号；4）临近收尾时新增功能先登记进 `DRAFT.md / BACKLOG.md` 不打断当前主线闭环，减功能按锁决策、清入口、保只读历史数据与全量复测四步下线。
