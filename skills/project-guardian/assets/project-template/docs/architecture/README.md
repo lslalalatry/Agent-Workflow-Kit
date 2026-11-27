@@ -13,6 +13,7 @@
 | [DATA_MODEL.md](./DATA_MODEL.md) | 集中库 Schema 规划、实体关系、幂等键、状态机与迁移契约 | 表结构或状态机变更前 |
 | [SECURITY_AND_AUTH.md](./SECURITY_AND_AUTH.md) | 角色权限矩阵（RBAC）、数据行级隔离与密钥安全边界 | 涉及账号、权限或外部鉴权时 |
 | [API_AND_UI_STATES.md](./API_AND_UI_STATES.md) | 接口响应规范、错误码表与列表/详情多态接入清单 | 新增/变更接口或页面状态时 |
+| [DESIGN.md](./DESIGN.md) | 机器可读设计系统（色板/字号/间距 Token 与反面禁用清单，供 AI 1:1 复刻 UI） | Web/UI 视觉定稿或复盘沉淀时 |
 | [DEPLOYMENT_AND_QA.md](./DEPLOYMENT_AND_QA.md) | 环境配置矩阵、部署检查、监控告警、备份还原演练与回滚入口 | 联调上线、改配置或变更部署脚本时 |
 | `modules/` | 复杂系统的子模块专项说明书（**一模块一 `.md` 卡**，复制 `modules/_TEMPLATE.md` 使用；做完即推 `main` 并新开窗口） | 新增/调整/下线子模块时 |
 | `images/` | 纯架构图、原型截图等轻量文档插图（**严禁放入业务数据图或 `> 50MB` 大文件**） | 补充架构或界面说明时 |

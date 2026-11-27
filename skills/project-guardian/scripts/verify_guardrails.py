@@ -236,9 +236,10 @@ def check_git_branches(
                 f"[Swarm 分片开发中] 当前处于并行工位分支 '{current_branch}'。"
                 f" 完成后须由 Coordinator 合回 '{trunk}' 并清理全部分片。"
             )
-    elif not current_branch and in_secondary_wt:
+    elif in_secondary_wt:
+        label = current_branch or "DETACHED_HEAD"
         warnings.append(
-            f"[Swarm 次级 Worktree] 当前处于隔离工作副本游离态。合回 '{trunk}' 后请随 Swarm 销毁。"
+            f"[并行次级 Worktree] 当前处于隔离工作副本（分支 '{label}'）。合回 '{trunk}' 后请销毁 worktree 并删除临时分支。"
         )
     elif current_branch.startswith("exp/"):
         other_extra = [b for b in branches if b not in {trunk, current_branch}]

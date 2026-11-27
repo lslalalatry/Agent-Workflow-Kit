@@ -144,6 +144,7 @@ Agent-Workflow-Kit/
 │           ├── DATA_MODEL.md              # Schema 规划、幂等键、状态机与迁移契约
 │           ├── SECURITY_AND_AUTH.md       # 权限模型（RBAC）与凭据安全边界
 │           ├── API_AND_UI_STATES.md       # 接口规范与列表/界面多态接入清单
+│           ├── DESIGN.md                  # 机器可读 UI 设计系统（色板/排版 Token，供 AI 1:1 复刻）
 │           ├── DEPLOYMENT_AND_QA.md       # 环境矩阵、备份还原与一键回滚
 │           ├── images/                    # 纯文档架构配图占位
 │           └── modules/                   # 复杂项目子模块专项设计卡（含 _TEMPLATE.md，一模块一卡）

@@ -1,5 +1,6 @@
 # 项目历史
 
+2026-11-27 按 D-011 兼容 Orca 任意次级 worktree 分支名、新增机器可读 `project-template/docs/architecture/DESIGN.md` UI 复刻模板，并完成本机 6 个 Orca Bot `SOUL.md` 配置与双端 `frontend-design` 安装。
 2026-11-26 按 D-010 补齐三项 P1 优化：`verify_guardrails.py` 主干残留 worktree 硬拦截、`sync_global.py` Antigravity 备份与 `--dry-run`、`query_docs.py` `modules` 状态总览与 `search --any`。
 2026-11-26 按 D-009（补充 D-008）新增 `/swarm` 自动感应触发与「轻度 / 中度 / 深度任务」分级判定（更新 `COLLABORATION_PRINCIPLES.md` §14、`project-template/AGENTS.md` §5、`SKILL.md`、`08-swarm-orchestration.md`、`README.md` 与 `使用指南.html`）。
 2026-11-26 按 D-008 深度嵌入原生 `/swarm` 模式（方案 A）：新增 `08-swarm-orchestration.md`、`verify_guardrails.py` 支持次级 worktree/`swarm/*` 过程隔离与 `--swarm-active`、`02-dual-redteam-audit.md` 无 `fork` 适配、`README.md` 与 `使用指南.html` Swarm 模板及多 worktree 隔离回归测试。

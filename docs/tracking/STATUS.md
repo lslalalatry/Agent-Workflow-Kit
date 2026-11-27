@@ -26,6 +26,8 @@ D-006 已落地并推送至 GitHub（`df5ed86`）。
 
 D-007 已落地并推送至 GitHub（`3865046`）。
 
-D-008、D-009 与 D-010 已合并实现：`08-swarm-orchestration.md` 与分级自动感应触发、`verify_guardrails.py` 过程放行与主干残留 worktree 硬拦截、`sync_global.py` 双端备份与 `--dry-run`、`query_docs.py modules` 总览与 `--any` 检索，正在执行全量回归并审查推送 `origin/main`。
+D-008、D-009 与 D-010 已落地并推送至 GitHub（`34eaaba`）。
+
+D-011 已在工作区实现：写入本机 6 个 Orca Bot `SOUL.md`、双端安装 `frontend-design`、`verify_guardrails.py` 兼容任意 Orca 次级 worktree 分支名、新增 `project-template/docs/architecture/DESIGN.md` 模板及 `test_coherence.py` 回归覆盖；双端全局同步与测试核验中。
 
 下轮修改先看本轮提交及工作区差异。运行 python3 -B -m unittest discover -s tests -v 核对提交和推送行为。

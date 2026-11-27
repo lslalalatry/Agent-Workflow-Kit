@@ -43,3 +43,5 @@ D-008 打通 `project-guardian` 与原生 `/swarm` 协同：1）`SKILL.md` 仅�
 D-009 补充 `/swarm` 自动感应触发机制：已接入项目（`project-template/AGENTS.md` §5）在启动 `/swarm` 时自动先读 `08-swarm-orchestration.md`；未接入目录通过全局规则 `COLLABORATION_PRINCIPLES.md` §14 按「轻度（不建档）/ 中度（`--with-decisions`）/ 深度（`--with-architecture` 全套）」任务分级自动判定或单句确认后接入。
 
 D-010 强化三项工程细节：1）`verify_guardrails.py` 在主分支正式收口时硬拦截残留 `git worktree`；2）`scripts/sync_global.py` 双端全局规则均做覆盖前当日备份并支持 `--dry-run`；3）`query_docs.py` 新增 `modules` 模块卡进度总览与 `search --any` OR 匹配。
+
+D-011 兼容 Orca 跨平台 worktree 与设计系统复刻：1）`verify_guardrails.py` 在任意次级 `git worktree` 施工期放行工作分支（含 Orca 默认分支名）并豁免总账本同步拦截，同时在 `main` 收口时维持零分支/零 worktree 残留强制拦截；2）`project-template/docs/architecture/DESIGN.md` 提供机器可读的 UI Token 与禁用清单模板供 AI 1:1 复刻视觉。

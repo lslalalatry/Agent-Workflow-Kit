@@ -343,7 +343,27 @@ class CoherenceTests(unittest.TestCase):
             active_report = json.loads(active_main.stdout)
             self.assertTrue(active_report["passed"], active_report)
 
-            # Closeout: even if branch is deleted, a lingering detached worktree must still be blocked on main
+            # Closeout: even if branch is deleted, a lingering Orca-style named worktree or detached worktree must be blocked on main
+            orca_wt = Path(tmp) / "wt-orca"
+            subprocess.run(
+                ["git", "worktree", "add", "-b", "orca/codex-task", str(orca_wt)],
+                cwd=project,
+                check=True,
+                capture_output=True,
+            )
+            (orca_wt / "orca_feature.py").write_text("OK = True\n", encoding="utf-8")
+            orca_guard = subprocess.run(
+                [sys.executable, str(VERIFY_GUARDRAILS), "--root", str(orca_wt), "--json"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            orca_report = json.loads(orca_guard.stdout)
+            self.assertTrue(orca_report["passed"], orca_report)
+            self.assertTrue(any("并行次级 Worktree" in w for w in orca_report["warnings"]), orca_report)
+            subprocess.run(["git", "worktree", "remove", "--force", str(orca_wt)], cwd=project, check=True, capture_output=True)
+            subprocess.run(["git", "branch", "-D", "orca/codex-task"], cwd=project, check=True, capture_output=True)
+
             detached_wt = Path(tmp) / "wt-detached"
             subprocess.run(
                 ["git", "worktree", "add", "--detach", str(detached_wt)],

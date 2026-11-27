@@ -59,3 +59,9 @@ README 和离线使用指南分别列出首次接入和已接入项目升级。�
 用户批准在推送前同步补齐三项 P1 优化并与 D-008、D-009 一并审查推送至 GitHub：1）`verify_guardrails.py` 在 `main` 正式收口（非 `--swarm-active` 且非次级 worktree）时将残留多余 `git worktree`（含游离态）升级为 `[残留 Worktree 拦截]` 硬阻断；2）`scripts/sync_global.py` 为 Antigravity 全局 `AGENTS.md` 补齐同款每日日期备份并新增 `--dry-run` 预览开关；3）`query_docs.py` 新增 `modules` 模块卡总表子命令（输出状态、已勾/总断言数与关联编号）及 `search --any` OR 宽松匹配，配套补充 `test_coherence.py` 回归覆盖。
 
 <!-- guardian-decision D-010 affects=BACKLOG.md,SPEC.md,STATUS.md -->
+
+## D-011 · 2026-11-27 · 生效
+
+用户批准将 `project-guardian` 与 Orca 跨平台 6 岗 Bots（主理人、牛马 1 号-codex、牛马 2 号-antigravity、PR 评审、复盘沉淀官、工作区清理）深度打通：1）直接为本机 `~/.orca/bots/` 全部 6 个 Bot 写入协同 `SOUL.md`（主理人规划与总账合一、Codex/Antigravity 隔离写码禁碰总账、PR 评审异构只读盲审、复盘沉淀官事后异步沉淀 `AGENTS.md` 与 `DESIGN.md`、工作区清理定期卫生）；2）放宽 `verify_guardrails.py` 对任意次级 git worktree 分支名的施工期兼容（主分支收口时仍严格零残留拦截）并补充 Orca worktree 回归测试；3）在 `project-template/docs/architecture/` 新增机器可读 UI 复刻模板 `DESIGN.md` 并双端安装 `anthropics/skills` 的 `frontend-design`。
+
+<!-- guardian-decision D-011 affects=BACKLOG.md,SPEC.md,STATUS.md -->
